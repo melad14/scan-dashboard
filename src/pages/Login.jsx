@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { Shield, Mail, Lock, AlertCircle, Loader } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -22,82 +22,150 @@ export default function Login() {
       navigate('/');
     } catch (err) {
       console.error(err);
-      setError(err.message || 'فشل تسجيل الدخول، يرجى التحقق من البيانات.');
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="rtl min-h-screen flex items-center justify-center bg-[#0b0f19] relative overflow-hidden">
-      {/* Decorative blurred backgrounds */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[120px]" />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <div className="w-full max-w-md mx-4">
+        {/* Card */}
+        <div className="card" style={{ padding: '40px 32px' }}>
+          {/* Logo & Title */}
+          <div className="text-center" style={{ marginBottom: '32px' }}>
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                backgroundColor: 'var(--brand-primary)',
+                borderRadius: '16px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+              </svg>
+            </div>
 
-      <div className="w-full max-w-md p-8 glass-panel shadow-2xl relative z-10 mx-4">
-        <div className="text-center mb-8">
-          <div className="inline-flex p-4 bg-indigo-500/10 rounded-2xl mb-4 border border-indigo-500/20 text-indigo-400">
-            <Shield size={36} className="animate-pulse" />
+            <h1 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
+              ScanGo Admin
+            </h1>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+              Sign in to access the dashboard
+            </p>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2 bg-gradient-to-l from-indigo-400 to-sky-400 bg-clip-text text-transparent">
-            أشعتك | لوحة التحكم
-          </h1>
-          <p className="text-sm text-[#94a3b8]">المنصة الطبية المتكاملة للأشعة والتحاليل المنزلية</p>
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Error Alert */}
+            {error && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  background: 'var(--error-bg)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--error)',
+                  fontSize: '13px',
+                }}
+              >
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Email */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                Email Address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail
+                  size={16}
+                  style={{
+                    position: 'absolute',
+                    left: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--text-muted)',
+                  }}
+                />
+                <input
+                  type="email"
+                  required
+                  className="form-input"
+                  style={{ width: '100%', paddingLeft: '40px', height: '44px' }}
+                  placeholder="admin@scango.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock
+                  size={16}
+                  style={{
+                    position: 'absolute',
+                    left: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--text-muted)',
+                  }}
+                />
+                <input
+                  type="password"
+                  required
+                  className="form-input"
+                  style={{ width: '100%', paddingLeft: '40px', height: '44px' }}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                height: '44px',
+                marginTop: '4px',
+                opacity: loading ? 0.6 : 1,
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <span>Sign In</span>
+              )}
+            </button>
+          </form>
         </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-6">
-          {error && (
-            <div className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm animate-shake">
-              <AlertCircle size={18} />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2 relative">
-            <label className="text-sm font-semibold text-[#94a3b8] mr-1">البريد الإلكتروني</label>
-            <div className="relative">
-              <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-[#64748b]" size={18} />
-              <input
-                type="email"
-                required
-                className="w-full pr-12 pl-4 py-3 bg-[#0d1324] border border-white/5 rounded-xl text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 transition-all"
-                placeholder="admin@scango.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 relative">
-            <label className="text-sm font-semibold text-[#94a3b8] mr-1">كلمة المرور</label>
-            <div className="relative">
-              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-[#64748b]" size={18} />
-              <input
-                type="password"
-                required
-                className="w-full pr-12 pl-4 py-3 bg-[#0d1324] border border-white/5 rounded-xl text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 transition-all"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 py-3 bg-gradient-to-l from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99] disabled:opacity-55"
-          >
-            {loading ? (
-              <>
-                <Loader size={18} className="animate-spin" />
-                <span>جاري تسجيل الدخول...</span>
-              </>
-            ) : (
-              <span>دخول لوحة التحكم</span>
-            )}
-          </button>
-        </form>
+        {/* Footer */}
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          ScanGo Medical Services Platform © 2026
+        </p>
       </div>
     </div>
   );

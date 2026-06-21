@@ -1,26 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   SCANGO ADMIN DASHBOARD — Design System v1.0
+   Professional dark theme. No glassmorphism. No gradients.
+   Clean, data-dense, efficient.
+   ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Sleek Premium Dark Theme Palette */
-  --bg-primary: #0b0f19;
-  --bg-secondary: #131b2e;
-  --bg-tertiary: #1e2942;
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-secondary: #0ea5e9; /* Sky */
-  --accent-success: #10b981; /* Emerald */
-  --accent-warning: #f59e0b; /* Amber */
-  --accent-danger: #ef4444; /* Rose */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(19, 27, 46, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glow-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
-  --font-sans: 'Inter', 'Cairo', sans-serif;
-  --font-title: 'Outfit', 'Cairo', sans-serif;
+  /* ─── Brand ────────────────────────────────────────────── */
+  --brand-primary: #1D9E75;
+  --brand-primary-dark: #16755A;
+  --brand-primary-deep: #085041;
+  --brand-primary-light: #E8F5F0;
+
+  /* ─── Surfaces ─────────────────────────────────────────── */
+  --bg-primary: #0F1729;
+  --bg-sidebar: #0A0F1E;
+  --bg-surface: #1A2332;
+  --bg-surface-hover: #243044;
+  --bg-surface-bright: #2D3B50;
+
+  /* ─── Text ─────────────────────────────────────────────── */
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* ─── Borders ──────────────────────────────────────────── */
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+
+  /* ─── Status Colors (UNIFIED with mobile apps) ─────────── */
+  --status-pending: #D97B0A;
+  --status-pending-bg: rgba(217, 123, 10, 0.15);
+  --status-accepted: #2B7EC2;
+  --status-accepted-bg: rgba(43, 126, 194, 0.15);
+  --status-assigned: #2B7EC2;
+  --status-assigned-bg: rgba(43, 126, 194, 0.15);
+  --status-on-way: #D97B0A;
+  --status-on-way-bg: rgba(217, 123, 10, 0.15);
+  --status-arrived: #1D9E75;
+  --status-arrived-bg: rgba(29, 158, 117, 0.15);
+  --status-in-progress: #1D9E75;
+  --status-in-progress-bg: rgba(29, 158, 117, 0.15);
+  --status-completed: #4D8C2C;
+  --status-completed-bg: rgba(77, 140, 44, 0.15);
+  --status-report-ready: #4D8C2C;
+  --status-report-ready-bg: rgba(77, 140, 44, 0.15);
+  --status-cancelled: #D44245;
+  --status-cancelled-bg: rgba(212, 66, 69, 0.15);
+
+  /* ─── Semantic ─────────────────────────────────────────── */
+  --error: #D44245;
+  --error-bg: rgba(212, 66, 69, 0.15);
+  --success: #4D8C2C;
+  --success-bg: rgba(77, 140, 44, 0.15);
+  --warning: #D97B0A;
+  --warning-bg: rgba(217, 123, 10, 0.15);
+  --info: #2B7EC2;
+  --info-bg: rgba(43, 126, 194, 0.15);
+
+  /* ─── Typography ───────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-arabic: 'Cairo', 'Inter', sans-serif;
+
+  /* ─── Spacing ──────────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 20px;
 }
 
+/* ─── Reset ────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -34,151 +86,162 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-title);
+  font-family: var(--font-sans);
   color: var(--text-primary);
   font-weight: 600;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* ─── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--bg-surface-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-}
-
-/* Glassmorphism utility classes */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-}
-
-.glass-card {
-  background: rgba(30, 41, 66, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: var(--glow-shadow);
-}
-
-/* Button stylings */
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS — Solid colors only. Never gradients.
+   ═══════════════════════════════════════════════════════════ */
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  background: var(--brand-primary);
   color: #ffffff;
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
   font-family: var(--font-sans);
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-  opacity: 0.95;
+  background: var(--brand-primary-dark);
 }
 
 .btn-secondary {
-  background: var(--bg-tertiary);
+  background: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-hover);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--accent-danger) 0%, #b91c1c 100%);
-  color: #ffffff;
-  border: none;
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-danger:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  background: var(--error-bg);
 }
 
-/* Inputs & Form styling */
+/* ═══════════════════════════════════════════════════════════
+   INPUTS & FORMS
+   ═══════════════════════════════════════════════════════════ */
 .form-input {
-  background: rgba(11, 15, 25, 0.6);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
   outline: none;
   font-family: var(--font-sans);
-  transition: all 0.2s ease;
+  font-size: 14px;
+  transition: border-color 0.15s ease;
 }
 
 .form-input:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.15);
 }
 
-/* Badge styling */
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS BADGES — Unified with mobile apps
+   ═══════════════════════════════════════════════════════════ */
 .badge {
   padding: 4px 10px;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+  gap: 6px;
 }
 
-.badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
-.badge-assigned { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
-.badge-active { background: rgba(14, 165, 233, 0.15); color: var(--accent-secondary); }
-.badge-completed { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
-.badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
-.badge-info { background: rgba(255, 255, 255, 0.08); color: var(--text-secondary); }
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
 
-/* Table styling */
+.badge-pending { background: var(--status-pending-bg); color: var(--status-pending); }
+.badge-pending::before { background: var(--status-pending); }
+
+.badge-accepted { background: var(--status-accepted-bg); color: var(--status-accepted); }
+.badge-accepted::before { background: var(--status-accepted); }
+
+.badge-assigned { background: var(--status-assigned-bg); color: var(--status-assigned); }
+.badge-assigned::before { background: var(--status-assigned); }
+
+.badge-on_way { background: var(--status-on-way-bg); color: var(--status-on-way); }
+.badge-on_way::before { background: var(--status-on-way); }
+
+.badge-arrived { background: var(--status-arrived-bg); color: var(--status-arrived); }
+.badge-arrived::before { background: var(--status-arrived); }
+
+.badge-in_progress { background: var(--status-in-progress-bg); color: var(--status-in-progress); }
+.badge-in_progress::before { background: var(--status-in-progress); }
+
+.badge-completed { background: var(--status-completed-bg); color: var(--status-completed); }
+.badge-completed::before { background: var(--status-completed); }
+
+.badge-report_ready { background: var(--status-report-ready-bg); color: var(--status-report-ready); }
+.badge-report_ready::before { background: var(--status-report-ready); }
+
+.badge-cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled); }
+.badge-cancelled::before { background: var(--status-cancelled); }
+
+.badge-info { background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); }
+.badge-info::before { background: var(--text-secondary); }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES — Compact, data-dense, clean
+   ═══════════════════════════════════════════════════════════ */
 .custom-table {
   width: 100%;
   border-collapse: collapse;
@@ -186,27 +249,111 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .custom-table th {
-  padding: 16px;
-  color: var(--text-secondary);
+  padding: 12px 16px;
+  color: var(--text-muted);
   font-weight: 600;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .custom-table td {
-  padding: 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+}
+
+.custom-table tr {
+  transition: background 0.1s ease;
 }
 
 .custom-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-surface-hover);
 }
 
-/* RTL Helpers for Arabic Dashboard interface */
+/* ═══════════════════════════════════════════════════════════
+   CARDS — Clean surfaces, no glass effects
+   ═══════════════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.card-hover {
+  transition: border-color 0.15s ease;
+}
+
+.card-hover:hover {
+  border-color: var(--border-hover);
+}
+
+/* Stat cards */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: border-color 0.15s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--brand-primary);
+}
+
+.stat-card .stat-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(29, 158, 117, 0.1);
+  color: var(--brand-primary);
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 12px;
+  font-family: 'Inter', monospace;
+}
+
+.stat-card .stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RTL Helpers (for Arabic labels in sidebar)
+   ═══════════════════════════════════════════════════════════ */
 .rtl {
   direction: rtl;
   text-align: right;
-  font-family: 'Cairo', 'Inter', sans-serif;
+  font-family: var(--font-arabic);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════ */
+.text-brand { color: var(--brand-primary); }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+
+/* Skeleton loader animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-surface-hover) 50%, var(--bg-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
 }

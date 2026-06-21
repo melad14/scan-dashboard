@@ -17,12 +17,12 @@ export default function Layout({ children }) {
   const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
 
   const menuItems = [
-    { path: '/', label: 'الرئيسية', icon: LayoutDashboard },
-    { path: '/orders', label: 'الطلبات الطبية', icon: Activity },
-    { path: '/technicians', label: 'إدارة الفنيين', icon: UserCheck },
-    { path: '/patients', label: 'سجل المرضى', icon: Users },
-    { path: '/services', label: 'الخدمات والتسعير', icon: Settings },
-    { path: '/analytics', label: 'التقارير والتحليلات', icon: TrendingUp }
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/orders', label: 'Orders', icon: Activity },
+    { path: '/technicians', label: 'Technicians', icon: UserCheck },
+    { path: '/patients', label: 'Patients', icon: Users },
+    { path: '/services', label: 'Services & Pricing', icon: Settings },
+    { path: '/analytics', label: 'Analytics', icon: TrendingUp }
   ];
 
   const handleLogout = () => {
@@ -32,22 +32,62 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="rtl min-h-screen flex bg-[#0b0f19] text-white">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#0d1324] border-l border-white/5 flex flex-col justify-between fixed top-0 bottom-0 right-0 z-20">
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      {/* ─── Sidebar ──────────────────────────────────────── */}
+      <aside
+        style={{
+          width: '260px',
+          backgroundColor: 'var(--bg-sidebar)',
+          borderRight: '1px solid var(--border-color)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 20,
+        }}
+      >
         <div>
           {/* Logo */}
-          <div className="p-6 border-b border-white/5 flex items-center justify-center gap-3">
-            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/25">
-              أ
+          <div
+            style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: 'var(--brand-primary)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '14px',
+                color: '#fff',
+              }}
+            >
+              SG
             </div>
-            <span className="text-xl font-extrabold bg-gradient-to-l from-indigo-400 to-sky-400 bg-clip-text text-transparent">
-              أشعتك لخدمات المنزل
-            </span>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                ScanGo
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                Admin Dashboard
+              </div>
+            </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 flex flex-col gap-1">
+          <nav style={{ padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -55,11 +95,32 @@ export default function Layout({ children }) {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-l from-indigo-600/25 to-sky-600/25 border border-indigo-500/20 text-indigo-400 font-semibold'
-                      : 'text-[#94a3b8] hover:bg-white/5 hover:text-white'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-sm)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: isActive ? '600' : '400',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: isActive ? 'rgba(29, 158, 117, 0.1)' : 'transparent',
+                    color: isActive ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                    borderLeft: isActive ? '3px solid var(--brand-primary)' : '3px solid transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }
+                  }}
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
@@ -70,46 +131,86 @@ export default function Layout({ children }) {
         </div>
 
         {/* User Card & Logout */}
-        <div className="p-4 border-t border-white/5 flex flex-col gap-4">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-[#94a3b8] border border-white/5">
-              <User size={18} />
+        <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '12px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                backgroundColor: 'var(--bg-surface)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              <User size={16} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white">{adminUser.name || 'مدير النظام'}</span>
-              <span className="text-xs text-[#64748b]">
-                {adminUser.role === 'super_admin' ? 'مدير عام' : 'دعم فني'}
-              </span>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                {adminUser.name || 'Admin User'}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                {adminUser.role === 'super_admin' ? 'Super Admin' : 'Support'}
+              </div>
             </div>
           </div>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-rose-500/20 text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-all font-semibold"
+            className="btn-danger"
+            style={{
+              width: '100%',
+              justifyContent: 'center',
+              padding: '8px',
+              fontSize: '13px',
+            }}
           >
-            <LogOut size={16} />
-            <span>تسجيل الخروج</span>
+            <LogOut size={14} />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 mr-64 flex flex-col min-h-screen">
+      {/* ─── Main Content ─────────────────────────────────── */}
+      <div style={{ flex: 1, marginLeft: '260px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Header */}
-        <header className="h-20 bg-[#0d1324]/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-10">
-          <h2 className="text-xl font-bold bg-gradient-to-l from-white to-[#94a3b8] bg-clip-text text-transparent">
-            {menuItems.find((item) => item.path === location.pathname)?.label || 'لوحة التحكم'}
+        <header
+          style={{
+            height: '64px',
+            backgroundColor: 'var(--bg-sidebar)',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 24px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)' }}>
+            {menuItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
           </h2>
           
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-[#94a3b8] bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-              التاريخ المحلي: {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </div>
+          <div
+            style={{
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              backgroundColor: 'var(--bg-surface)',
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-color)',
+            }}
+          >
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="p-8 flex-1 flex flex-col gap-8">
+        <main style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {children}
         </main>
       </div>
