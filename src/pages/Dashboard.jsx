@@ -6,7 +6,7 @@ import {
   Activity,
   UserCheck,
   Clock,
-  ChevronLeft,
+  ChevronRight,
   Loader,
   AlertCircle
 } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function Dashboard() {
         setRecentOrders(ordersRes.data);
       } catch (err) {
         console.error(err);
-        setError('فشل في تحميل إحصائيات لوحة التحكم.');
+        setError('Failed to load dashboard statistics.');
       } finally {
         setLoading(false);
       }
@@ -41,34 +41,35 @@ export default function Dashboard() {
     switch (status) {
       case 'pending': return 'badge-pending';
       case 'assigned': return 'badge-assigned';
-      case 'on_way':
-      case 'arrived':
-      case 'in_progress': return 'badge-active';
-      case 'completed':
-      case 'report_ready': return 'badge-completed';
+      case 'on_way': return 'badge-on_way';
+      case 'arrived': return 'badge-arrived';
+      case 'in_progress': return 'badge-in_progress';
+      case 'completed': return 'badge-completed';
+      case 'report_ready': return 'badge-report_ready';
       case 'cancelled': return 'badge-danger';
       default: return 'badge-info';
     }
   };
 
-  const translateStatus = (status) => {
+  const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return 'بانتظار المراجعة';
-      case 'assigned': return 'تم تعيين فني';
-      case 'on_way': return 'الفني في الطريق';
-      case 'arrived': return 'وصل الفني';
-      case 'in_progress': return 'جاري الفحص';
-      case 'completed': return 'تم الفحص';
-      case 'report_ready': return 'التقرير جاهز';
-      case 'cancelled': return 'ملغي';
-      default: return status;
+      case 'pending': return 'Pending Review';
+      case 'accepted': return 'Accepted';
+      case 'assigned': return 'Assigned';
+      case 'on_way': return 'On the Way';
+      case 'arrived': return 'Arrived';
+      case 'in_progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'report_ready': return 'Report Ready';
+      case 'cancelled': return 'Cancelled';
+      default: return status.toUpperCase();
     }
   };
 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader size={48} className="animate-spin text-indigo-500" />
+        <Loader size={48} className="animate-spin text-brand" />
       </div>
     );
   }
@@ -83,82 +84,85 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-indigo-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-[#94a3b8]">إجمالي المبيعات</span>
-            <span className="text-3xl font-extrabold text-white">{stats.totalRevenue} ج.م</span>
+    <div className="flex flex-col gap-6">
+      {/* Metrics Bento Box Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="stat-card md:col-span-2 lg:col-span-2">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Total Revenue</span>
+            <div className="stat-icon">
+              <TrendingUp size={20} />
+            </div>
           </div>
-          <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-400">
-            <TrendingUp size={24} />
-          </div>
-        </div>
-
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-sky-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-[#94a3b8]">طلبات اليوم</span>
-            <span className="text-3xl font-extrabold text-white">{stats.ordersToday}</span>
-          </div>
-          <div className="p-4 bg-sky-500/10 rounded-2xl text-sky-400">
-            <Activity size={24} />
+          <div className="stat-value text-brand font-bold">
+            {Number(stats?.totalRevenue || 0).toLocaleString()}{' '}
+            <span className="text-sm font-medium text-muted">EGP</span>
           </div>
         </div>
 
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-emerald-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-[#94a3b8]">الفنيين المتاحين حالياً</span>
-            <span className="text-3xl font-extrabold text-white">{stats.activeTechs}</span>
+        <div className="stat-card md:col-span-1 lg:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Orders Today</span>
+            <div className="stat-icon">
+              <Activity size={20} />
+            </div>
           </div>
-          <div className="p-4 bg-emerald-500/10 rounded-2xl text-emerald-400">
-            <UserCheck size={24} />
-          </div>
+          <div className="stat-value">{stats?.ordersToday || 0}</div>
         </div>
 
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-amber-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-[#94a3b8]">طلبات بانتظار التعيين</span>
-            <span className="text-3xl font-extrabold text-white">{stats.pendingAssignments}</span>
+        <div className="stat-card md:col-span-1 lg:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Active Technicians</span>
+            <div className="stat-icon">
+              <UserCheck size={20} />
+            </div>
           </div>
-          <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-400">
-            <Clock size={24} />
+          <div className="stat-value">{stats?.activeTechs || 0}</div>
+        </div>
+
+        <div className="stat-card warning md:col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Pending Assignments</span>
+            <div className="stat-icon">
+              <Clock size={20} />
+            </div>
           </div>
+          <div className="stat-value text-amber-500">{stats?.pendingAssignments || 0}</div>
         </div>
       </div>
 
       {/* Main Panel grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Orders List */}
-        <div className="xl:col-span-2 glass-panel p-6 flex flex-col gap-6 shadow-xl">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
-            <h3 className="text-lg font-bold">أحدث الطلبات الطبية</h3>
+        <div className="xl:col-span-2 card flex flex-col gap-4 shadow-xl">
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 className="text-lg font-bold">Recent Medical Orders</h3>
             <button
               onClick={() => navigate('/orders')}
-              className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
+              className="flex items-center gap-1 text-sm text-brand hover:underline font-semibold cursor-pointer"
             >
-              <span>مشاهدة كل الطلبات</span>
-              <ChevronLeft size={16} />
+              <span>View All Orders</span>
+              <ChevronRight size={16} />
             </button>
           </div>
 
           <div className="overflow-x-auto">
             <table className="custom-table">
               <thead>
-                <tr className="text-right">
-                  <th>رقم الطلب</th>
-                  <th>المريض</th>
-                  <th>نوع الخدمة</th>
-                  <th>تاريخ الحجز</th>
-                  <th>الحالة</th>
-                  <th>الإجمالي</th>
+                <tr>
+                  <th>Order No.</th>
+                  <th>Patient</th>
+                  <th>Service Type</th>
+                  <th>Booking Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {recentOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-8 text-[#64748b]">
-                      لا توجد طلبات مسجلة حالياً
+                    <td colSpan="6" className="text-center py-8 text-muted">
+                      No medical orders found.
                     </td>
                   </tr>
                 ) : (
@@ -166,18 +170,18 @@ export default function Dashboard() {
                     <tr
                       key={order._id}
                       onClick={() => navigate(`/orders/${order._id}`)}
-                      className="cursor-pointer"
+                      className={`cursor-pointer tr-${order.status}`}
                     >
-                      <td className="font-semibold text-indigo-400">{order.orderNumber}</td>
-                      <td>{order.patientSnapshot?.name || 'مريض مجهول'}</td>
-                      <td>{order.serviceCategory === 'xray' ? 'أشعة منزلية' : 'تحاليل مخبرية'}</td>
-                      <td>{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
+                      <td className="font-semibold text-brand">{order.orderNumber}</td>
+                      <td>{order.patientSnapshot?.name || 'Unknown Patient'}</td>
+                      <td>{order.serviceCategory === 'xray' ? 'Home X-Ray' : 'Lab Tests'}</td>
+                      <td>{new Date(order.createdAt).toLocaleDateString('en-US')}</td>
                       <td>
                         <span className={`badge ${getStatusBadgeClass(order.status)}`}>
-                          {translateStatus(order.status)}
+                          {getStatusLabel(order.status)}
                         </span>
                       </td>
-                      <td className="font-bold">{order.pricing?.total} ج.م</td>
+                      <td className="font-bold">{order.pricing?.total} EGP</td>
                     </tr>
                   ))
                 )}
@@ -186,42 +190,42 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Config / Quick links */}
-        <div className="glass-panel p-6 flex flex-col gap-6 shadow-xl">
-          <h3 className="text-lg font-bold border-b border-white/5 pb-4">تجهيز الخدمات المنزلية</h3>
+        {/* Quick Config / Quick actions checklist */}
+        <div className="card flex flex-col gap-4 shadow-xl">
+          <h3 className="text-lg font-bold border-b border-white/5 pb-3">Quick Actions</h3>
           
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <div
               onClick={() => navigate('/services')}
-              className="glass-card p-4 flex items-center justify-between cursor-pointer"
+              className="quick-action-item"
             >
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">تعديل تسعيرة المنصة</span>
-                <span className="text-xs text-[#94a3b8]">رسوم الانتقال ومضاعف الطوارئ</span>
+                <span className="font-semibold">Edit Pricing & Fees</span>
+                <span className="text-xs text-muted">Manage travel fee, emergency, and service surcharge</span>
               </div>
-              <ChevronLeft size={18} className="text-[#64748b]" />
+              <ChevronRight size={18} className="text-muted" />
             </div>
 
             <div
               onClick={() => navigate('/technicians')}
-              className="glass-card p-4 flex items-center justify-between cursor-pointer"
+              className="quick-action-item"
             >
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">إضافة فني جديد</span>
-                <span className="text-xs text-[#94a3b8]">تسجيل فني أشعة أو تحاليل جديد</span>
+                <span className="font-semibold">Add Technician</span>
+                <span className="text-xs text-muted">Register a new X-ray or laboratory technician</span>
               </div>
-              <ChevronLeft size={18} className="text-[#64748b]" />
+              <ChevronRight size={18} className="text-muted" />
             </div>
 
             <div
               onClick={() => navigate('/analytics')}
-              className="glass-card p-4 flex items-center justify-between cursor-pointer"
+              className="quick-action-item"
             >
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">التقرير المالي العام</span>
-                <span className="text-xs text-[#94a3b8]">تفاصيل الأرباح اليومية والشهرية</span>
+                <span className="font-semibold">Financial Analytics</span>
+                <span className="text-xs text-muted">View details of daily and monthly revenue</span>
               </div>
-              <ChevronLeft size={18} className="text-[#64748b]" />
+              <ChevronRight size={18} className="text-muted" />
             </div>
           </div>
         </div>
@@ -229,3 +233,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

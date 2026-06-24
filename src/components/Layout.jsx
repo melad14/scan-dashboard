@@ -32,62 +32,27 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="app-container">
       {/* ─── Sidebar ──────────────────────────────────────── */}
-      <aside
-        style={{
-          width: '260px',
-          backgroundColor: 'var(--bg-sidebar)',
-          borderRight: '1px solid var(--border-color)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          position: 'fixed',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          zIndex: 20,
-        }}
-      >
+      <aside className="sidebar">
         <div>
           {/* Logo */}
-          <div
-            style={{
-              padding: '20px 24px',
-              borderBottom: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                backgroundColor: 'var(--brand-primary)',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '700',
-                fontSize: '14px',
-                color: '#fff',
-              }}
-            >
+          <div className="sidebar-logo-container">
+            <div className="sidebar-logo">
               SG
             </div>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+              <div className="sidebar-brand-name">
                 ScanGo
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <div className="sidebar-brand-sub">
                 Admin Dashboard
               </div>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav style={{ padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <nav className="sidebar-nav">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -95,32 +60,7 @@ export default function Layout({ children }) {
                 <Link
                   key={item.path}
                   to={item.path}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-sm)',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: isActive ? '600' : '400',
-                    transition: 'all 0.15s ease',
-                    backgroundColor: isActive ? 'rgba(29, 158, 117, 0.1)' : 'transparent',
-                    color: isActive ? 'var(--brand-primary)' : 'var(--text-secondary)',
-                    borderLeft: isActive ? '3px solid var(--brand-primary)' : '3px solid transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
-                      e.currentTarget.style.color = 'var(--text-primary)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'var(--text-secondary)';
-                    }
-                  }}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
@@ -131,28 +71,19 @@ export default function Layout({ children }) {
         </div>
 
         {/* User Card & Logout */}
-        <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '12px' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                backgroundColor: 'var(--bg-surface)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border-color)',
-              }}
-            >
-              <User size={16} />
+        <div className="sidebar-footer">
+          <div className="sidebar-user-card">
+            <div className="sidebar-avatar-wrapper">
+              <div className="sidebar-avatar">
+                <User size={16} />
+              </div>
+              <span className="sidebar-avatar-status" />
             </div>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
+              <div className="sidebar-user-name">
                 {adminUser.name || 'Admin User'}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <div className="sidebar-user-role">
                 {adminUser.role === 'super_admin' ? 'Super Admin' : 'Support'}
               </div>
             </div>
@@ -175,42 +106,20 @@ export default function Layout({ children }) {
       </aside>
 
       {/* ─── Main Content ─────────────────────────────────── */}
-      <div style={{ flex: 1, marginLeft: '260px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div className="main-content">
         {/* Header */}
-        <header
-          style={{
-            height: '64px',
-            backgroundColor: 'var(--bg-sidebar)',
-            borderBottom: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-          }}
-        >
-          <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)' }}>
+        <header className="header-bar">
+          <h2 className="header-title">
             {menuItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
           </h2>
           
-          <div
-            style={{
-              fontSize: '12px',
-              color: 'var(--text-muted)',
-              backgroundColor: 'var(--bg-surface)',
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-color)',
-            }}
-          >
+          <div className="header-date">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </header>
 
         {/* Page Content */}
-        <main style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <main className="page-content">
           {children}
         </main>
       </div>

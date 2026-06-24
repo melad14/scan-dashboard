@@ -33,12 +33,12 @@ export default function Analytics() {
         for (let i = 6; i >= 0; i--) {
           const d = new Date();
           d.setDate(d.getDate() - i);
-          const dateStr = d.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+          const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           last7Days[dateStr] = 0;
         }
 
         completed.forEach(order => {
-          const dateStr = new Date(order.createdAt).toLocaleDateString('ar-EG', {
+          const dateStr = new Date(order.createdAt).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric'
           });
@@ -49,7 +49,7 @@ export default function Analytics() {
 
         const formattedChart = Object.keys(last7Days).map(date => ({
           name: date,
-          'الإيرادات': last7Days[date]
+          'Revenue': last7Days[date]
         }));
 
         setChartData(formattedChart);
@@ -65,58 +65,58 @@ export default function Analytics() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader size={48} className="animate-spin text-indigo-500" />
+        <Loader size={48} className="animate-spin text-brand" />
       </div>
     );
   }
 
   return (
-    <div className="rtl flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       
       {/* Overview Metric Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-indigo-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-[#94a3b8]">إجمالي المبيعات المحققة</span>
-            <span className="text-2xl font-bold text-white">{stats.totalRevenue || 0} ج.م</span>
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Total Revenue</span>
+            <div className="stat-icon">
+              <TrendingUp size={20} />
+            </div>
           </div>
-          <div className="p-3.5 bg-indigo-500/10 rounded-2xl text-indigo-400">
-            <TrendingUp size={20} />
-          </div>
+          <div className="stat-value">{stats.totalRevenue || 0} EGP</div>
         </div>
 
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-sky-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-[#94a3b8]">تغطية الزيارات الطبية</span>
-            <span className="text-2xl font-bold text-white">زيارات نشطة</span>
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Medical Visit Coverage</span>
+            <div className="stat-icon">
+              <Calendar size={20} />
+            </div>
           </div>
-          <div className="p-3.5 bg-sky-500/10 rounded-2xl text-sky-400">
-            <Calendar size={20} />
-          </div>
+          <div className="stat-value">Active Visits</div>
         </div>
 
-        <div className="glass-panel p-6 flex items-center justify-between border-l-4 border-emerald-500 shadow-lg">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-[#94a3b8]">تقييم رضاء العملاء</span>
-            <span className="text-2xl font-bold text-white">4.8 / 5.0</span>
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <span className="stat-label">Customer Satisfaction</span>
+            <div className="stat-icon">
+              <Award size={20} />
+            </div>
           </div>
-          <div className="p-3.5 bg-emerald-500/10 rounded-2xl text-emerald-400">
-            <Award size={20} />
-          </div>
+          <div className="stat-value">4.8 / 5.0</div>
         </div>
       </div>
 
       {/* Recharts Graphical Panel */}
-      <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-        <h3 className="text-lg font-bold border-b border-white/5 pb-4">مخطط الإيرادات اليومي (آخر 7 أيام)</h3>
+      <div className="card shadow-xl flex flex-col gap-6">
+        <h3 className="text-lg font-bold border-b border-white/5 pb-3">Daily Revenue (Last 7 Days)</h3>
         
         <div className="w-full h-80">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#1D9E75" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#1D9E75" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -134,18 +134,18 @@ export default function Analytics() {
               />
               <Tooltip
                 contentStyle={{
-                  background: '#131b2e',
+                  background: '#1A2332',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '10px',
                   color: '#fff',
                   fontSize: '12px',
-                  fontFamily: 'Cairo'
+                  fontFamily: 'Inter'
                 }}
               />
               <Area
                 type="monotone"
-                dataKey="الإيرادات"
-                stroke="#6366f1"
+                dataKey="Revenue"
+                stroke="#1D9E75"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
@@ -158,3 +158,4 @@ export default function Analytics() {
     </div>
   );
 }
+

@@ -41,7 +41,7 @@ export default function OrderDetail() {
       }
     } catch (err) {
       console.error(err);
-      setError('حدث خطأ أثناء تحميل تفاصيل الطلب.');
+      setError('An error occurred while loading order details.');
     } finally {
       setLoading(false);
     }
@@ -56,10 +56,10 @@ export default function OrderDetail() {
     setActionLoading(true);
     try {
       await apiClient.put(`/admin/orders/${id}/assign`, { technicianId: selectedTech });
-      alert('تم تعيين الفني بنجاح!');
+      alert('Technician assigned successfully!');
       fetchOrderDetail();
     } catch (err) {
-      alert(err.message || 'فشل التعيين');
+      alert(err.message || 'Failed to assign technician');
     } finally {
       setActionLoading(false);
     }
@@ -69,11 +69,11 @@ export default function OrderDetail() {
     setActionLoading(true);
     try {
       await apiClient.put(`/admin/orders/${id}/status`, { status: forceStatus, note: statusNote });
-      alert('تم تحديث حالة الطلب يدوياً!');
+      alert('Order status updated manually!');
       setStatusNote('');
       fetchOrderDetail();
     } catch (err) {
-      alert(err.message || 'فشل تحديث الحالة');
+      alert(err.message || 'Failed to update order status');
     } finally {
       setActionLoading(false);
     }
@@ -83,34 +83,35 @@ export default function OrderDetail() {
     switch (status) {
       case 'pending': return 'badge-pending';
       case 'assigned': return 'badge-assigned';
-      case 'on_way':
-      case 'arrived':
-      case 'in_progress': return 'badge-active';
-      case 'completed':
-      case 'report_ready': return 'badge-completed';
+      case 'on_way': return 'badge-on_way';
+      case 'arrived': return 'badge-arrived';
+      case 'in_progress': return 'badge-in_progress';
+      case 'completed': return 'badge-completed';
+      case 'report_ready': return 'badge-report_ready';
       case 'cancelled': return 'badge-danger';
       default: return 'badge-info';
     }
   };
 
-  const translateStatus = (status) => {
+  const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return 'بانتظار المراجعة';
-      case 'assigned': return 'تم تعيين فني';
-      case 'on_way': return 'الفني في الطريق';
-      case 'arrived': return 'وصل الفني';
-      case 'in_progress': return 'جاري الفحص';
-      case 'completed': return 'تم الفحص';
-      case 'report_ready': return 'التقرير جاهز';
-      case 'cancelled': return 'ملغي';
-      default: return status;
+      case 'pending': return 'Pending Review';
+      case 'accepted': return 'Accepted';
+      case 'assigned': return 'Assigned';
+      case 'on_way': return 'On the Way';
+      case 'arrived': return 'Arrived';
+      case 'in_progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'report_ready': return 'Report Ready';
+      case 'cancelled': return 'Cancelled';
+      default: return status.toUpperCase();
     }
   };
 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader size={48} className="animate-spin text-indigo-500" />
+        <Loader size={48} className="animate-spin text-brand" />
       </div>
     );
   }
@@ -125,76 +126,76 @@ export default function OrderDetail() {
   }
 
   return (
-    <div className="rtl flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {/* Header Info */}
-      <div className="glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg border-b border-indigo-500/10">
-        <div className="flex flex-col gap-2">
+      <div className="card flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+        <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-extrabold text-white">الطلب {order.orderNumber}</h1>
+            <h1 className="text-2xl font-extrabold text-white">Order {order.orderNumber}</h1>
             <span className={`badge ${getStatusBadgeClass(order.status)}`}>
-              {translateStatus(order.status)}
+              {getStatusLabel(order.status)}
             </span>
           </div>
-          <p className="text-xs text-[#94a3b8]">
-            تم الإنشاء في: {new Date(order.createdAt).toLocaleString('ar-EG')}
+          <p className="text-xs text-muted">
+            Created on: {new Date(order.createdAt).toLocaleString('en-US')}
           </p>
         </div>
 
         <button
           onClick={() => navigate('/orders')}
-          className="btn-secondary text-sm py-2 px-4 rounded-xl"
+          className="btn-secondary text-sm py-2 px-4"
         >
-          رجوع للقائمة
+          Back to List
         </button>
       </div>
 
       {/* Main Grid Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Side: Order & Patient Details */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           
           {/* Patient and Case details */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-indigo-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <User size={18} />
-              <span>بيانات المريض والحالة</span>
+              <span>Patient & Case Details</span>
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">الاسم بالكامل</span>
-                <span className="font-semibold text-white">{order.patientSnapshot?.name || 'غير محدد'}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Full Name</span>
+                <span className="font-semibold text-white">{order.patientSnapshot?.name || 'Not specified'}</span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">رقم الهاتف</span>
-                <span className="font-semibold text-white">{order.patientSnapshot?.phone || 'غير محدد'}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Phone Number</span>
+                <span className="font-semibold text-white">{order.patientSnapshot?.phone || 'Not specified'}</span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">العمر / الجنس</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Age / Gender</span>
                 <span className="font-semibold text-white">
-                  {order.patientSnapshot?.age ? `${order.patientSnapshot.age} سنة` : 'مجهول'} / {order.patientSnapshot?.gender === 'male' ? 'ذكر' : 'أنثى'}
+                  {order.patientSnapshot?.age ? `${order.patientSnapshot.age} years` : 'Unknown'} / {order.patientSnapshot?.gender === 'male' ? 'Male' : 'Female'}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">طبيعة الحركة</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Mobility Status</span>
                 <span className="font-semibold text-white">
-                  {order.caseDetails?.isBedridden ? ' ملازم للفراش (Bedridden)' : 'قادر على الحركة'}
+                  {order.caseDetails?.isBedridden ? 'Bedridden' : 'Able to move'}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">تفاصيل الطابق</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Floor Details</span>
                 <span className="font-semibold text-white">
-                  الطابق {order.caseDetails?.floor || 'الأرضي'} / {order.caseDetails?.hasElevator ? 'يوجد مصعد' : 'لا يوجد مصعد'}
+                  Floor {order.caseDetails?.floor || 'Ground'} / {order.caseDetails?.hasElevator ? 'Elevator available' : 'No elevator'}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">الوزن التقريبي</span>
-                <span className="font-semibold text-white">{order.caseDetails?.weight ? `${order.caseDetails.weight} كجم` : 'غير محدد'}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Approximate Weight</span>
+                <span className="font-semibold text-white">{order.caseDetails?.weight ? `${order.caseDetails.weight} kg` : 'Not specified'}</span>
               </div>
               {order.caseDetails?.notes && (
-                <div className="md:col-span-2 flex flex-col gap-1.5 bg-white/5 p-4 rounded-xl border border-white/5">
-                  <span className="text-xs text-[#64748b]">ملاحظات المريض للحالة</span>
+                <div className="md:col-span-2 flex flex-col gap-1 bg-white/5 p-4 rounded-xl border border-white/5">
+                  <span className="text-xs text-muted">Patient Notes</span>
                   <p className="text-sm text-[#f8fafc]">{order.caseDetails.notes}</p>
                 </div>
               )}
@@ -202,29 +203,29 @@ export default function OrderDetail() {
           </div>
 
           {/* Location details */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-sky-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <MapPin size={18} />
-              <span>موقع الزيارة الجغرافي</span>
+              <span>Visit Location Details</span>
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">العنوان بالتفصيل</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Detailed Address</span>
                 <span className="font-semibold text-white">
-                  {order.location?.street}، {order.location?.building}، {order.location?.district}، {order.location?.governorate}
+                  {order.location?.street}, {order.location?.building}, {order.location?.district}, {order.location?.governorate}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-[#64748b]">توقيت الزيارة المفضل</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted">Preferred Visit Time</span>
                 <span className="font-semibold text-white flex items-center gap-2">
-                  <Calendar size={14} className="text-[#64748b]" />
+                  <Calendar size={14} className="text-muted" />
                   <span>
-                    {new Date(order.schedule?.date).toLocaleDateString('ar-EG')} - {' '}
-                    {order.schedule?.timeSlot === 'morning_9_12' ? 'صباحاً (9 - 12)' : order.schedule?.timeSlot === 'afternoon_12_3' ? 'ظهراً (12 - 3)' : 'مساءً (3 - 6)'}
+                    {new Date(order.schedule?.date).toLocaleDateString('en-US')} - {' '}
+                    {order.schedule?.timeSlot === 'morning_9_12' ? 'Morning (9 AM - 12 PM)' : order.schedule?.timeSlot === 'afternoon_12_3' ? 'Afternoon (12 PM - 3 PM)' : 'Evening (3 PM - 6 PM)'}
                   </span>
                   {order.schedule?.isEmergency && (
-                    <span className="badge badge-pending text-[10px] py-0.5 px-2">طوارئ فوري</span>
+                    <span className="badge badge-pending text-[10px] py-0.5 px-2">Immediate Emergency</span>
                   )}
                 </span>
               </div>
@@ -232,72 +233,72 @@ export default function OrderDetail() {
           </div>
 
           {/* Services list & Pricing breakdown */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-emerald-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <DollarSign size={18} />
-              <span>الخدمات الطبية ورسوم الفاتورة</span>
+              <span>Medical Services & Invoice Breakdown</span>
             </h3>
 
             <div className="overflow-x-auto">
               <table className="custom-table">
                 <thead>
-                  <tr className="text-right">
-                    <th>الخدمة المطلوبة</th>
-                    <th>الفئة</th>
-                    <th>السعر</th>
+                  <tr>
+                    <th>Requested Service</th>
+                    <th>Category</th>
+                    <th>Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {order.services.map((service, index) => (
                     <tr key={index}>
-                      <td className="font-semibold text-white">{service.nameAr} ({service.nameEn})</td>
-                      <td>{order.serviceCategory === 'xray' ? 'أشعة منزلية' : 'تحاليل مخبرية'}</td>
-                      <td className="font-bold">{service.price} ج.م</td>
+                      <td className="font-semibold text-white">{service.nameEn} ({service.nameAr})</td>
+                      <td>{order.serviceCategory === 'xray' ? 'Home X-Ray' : 'Lab Tests'}</td>
+                      <td className="font-bold">{service.price} EGP</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-end gap-6 bg-white/5 p-6 rounded-xl border border-white/5">
-              <div className="flex flex-col gap-2 min-w-[200px]">
+            <div className="flex flex-col md:flex-row justify-end gap-6 bg-white/5 p-4 rounded-xl border border-white/5 mt-2">
+              <div className="flex flex-col gap-2 min-w-[220px]">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#94a3b8]">مجموع الخدمات:</span>
-                  <span className="font-semibold">{order.pricing?.servicesTotal} ج.م</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#94a3b8]">رسوم الانتقال:</span>
-                  <span className="font-semibold">{order.pricing?.transferFee}  ج.م</span>
+                  <span className="text-secondary">Services Subtotal:</span>
+                  <span className="font-semibold">{order.pricing?.servicesTotal} EGP</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#94a3b8]">رسوم الطوارئ:</span>
-                  <span className="font-semibold">{order.pricing?.emergencyFee || 0} ج.م</span>
+                  <span className="text-secondary">Travel Fee:</span>
+                  <span className="font-semibold">{order.pricing?.transferFee} EGP</span>
                 </div>
-                <div className="flex justify-between text-base border-t border-white/10 pt-2 font-bold text-emerald-400">
-                  <span>إجمالي المبلغ:</span>
-                  <span>{order.pricing?.total} ج.م</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-secondary">Emergency Fee:</span>
+                  <span className="font-semibold">{order.pricing?.emergencyFee || 0} EGP</span>
                 </div>
-                <div className="flex justify-between text-xs text-[#64748b]">
-                  <span>طريقة الدفع:</span>
-                  <span>{order.payment?.method === 'cash' ? 'نقدي للفني (Cash)' : 'دفع إلكتروني'}</span>
+                <div className="flex justify-between text-base border-t border-white/10 pt-2 font-bold text-brand">
+                  <span>Total Invoice:</span>
+                  <span>{order.pricing?.total} EGP</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted">
+                  <span>Payment Method:</span>
+                  <span>{order.payment?.method === 'cash' ? 'Cash to Technician' : 'Electronic Payment'}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Uploaded prescription / reports results */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-violet-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <FileText size={18} />
-              <span>الروشتات المرفقة والتقارير الطبية</span>
+              <span>Attached Prescriptions & Medical Reports</span>
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Prescription */}
-              <div className="flex flex-col gap-4">
-                <span className="text-sm font-semibold text-[#94a3b8]">صورة الروشتة المرفقة:</span>
+              <div className="flex flex-col gap-3">
+                <span className="text-sm font-semibold text-secondary">Attached Prescription Image:</span>
                 {order.prescription?.images && order.prescription.images.length > 0 ? (
-                  <div className="border border-white/5 rounded-xl overflow-hidden bg-[#0d1324] p-2">
+                  <div className="border border-white/5 rounded-xl overflow-hidden bg-primary/40 p-2">
                     <img
                       src={order.prescription.images[0]}
                       alt="Prescription"
@@ -306,17 +307,17 @@ export default function OrderDetail() {
                     />
                   </div>
                 ) : (
-                  <div className="p-8 text-center bg-white/5 border border-dashed border-white/5 text-[#64748b] rounded-xl text-sm">
-                    لا توجد روشتة مرفقة مع الطلب
+                  <div className="p-8 text-center bg-white/5 border border-dashed border-white/5 text-muted rounded-xl text-sm">
+                    No prescription attached to the order.
                   </div>
                 )}
               </div>
 
               {/* Reports */}
-              <div className="flex flex-col gap-4">
-                <span className="text-sm font-semibold text-[#94a3b8]">صور تقرير الأشعة والنتائج:</span>
+              <div className="flex flex-col gap-3">
+                <span className="text-sm font-semibold text-secondary">X-Ray Results & Images:</span>
                 {order.report?.images && order.report.images.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 border border-white/5 rounded-xl overflow-hidden bg-[#0d1324] p-2">
+                  <div className="grid grid-cols-2 gap-2 border border-white/5 rounded-xl overflow-hidden bg-primary/40 p-2">
                     {order.report.images.map((img, i) => (
                       <img
                         key={i}
@@ -328,8 +329,8 @@ export default function OrderDetail() {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 text-center bg-white/5 border border-dashed border-white/5 text-[#64748b] rounded-xl text-sm">
-                    لم يقم الفني برفع صور النتائج حتى الآن
+                  <div className="p-8 text-center bg-white/5 border border-dashed border-white/5 text-muted rounded-xl text-sm">
+                    Technician has not uploaded result images yet.
                   </div>
                 )}
 
@@ -339,9 +340,9 @@ export default function OrderDetail() {
                       href={order.report.pdf}
                       target="_blank"
                       rel="noreferrer"
-                      className="btn-primary py-2 px-4 rounded-xl text-xs w-full justify-center"
+                      className="btn-primary py-2.5 px-4 text-xs w-full justify-center"
                     >
-                      تحميل تقرير الـ PDF المرفق
+                      Download Report PDF
                     </a>
                   </div>
                 )}
@@ -351,17 +352,17 @@ export default function OrderDetail() {
         </div>
 
         {/* Right Side: Assignment, Manual Updates, Timeline */}
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
           
           {/* Tech Assignment Card */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-indigo-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <UserPlus size={18} />
-              <span>تعيين فني الخدمة</span>
+              <span>Assign Technician</span>
             </h3>
 
             {order.technician ? (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <img
                     src={order.technician.photo || 'https://placehold.co/150x150.png'}
@@ -370,25 +371,25 @@ export default function OrderDetail() {
                   />
                   <div className="flex flex-col">
                     <span className="font-semibold text-white">{order.technician.name}</span>
-                    <span className="text-xs text-[#94a3b8]">{order.technician.phone}</span>
+                    <span className="text-xs text-muted">{order.technician.phone}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs w-max">
                   <Star size={14} fill="currentColor" />
-                  <span>{order.technician.rating} (تقييمات الفني)</span>
+                  <span>{order.technician.rating || 0} Rating</span>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                <p className="text-sm text-[#94a3b8]">هذا الطلب غير معين لفني حالياً. يرجى اختيار فني متاح:</p>
+                <p className="text-sm text-secondary">This order is not assigned to a technician yet. Please select an available technician:</p>
                 
                 <select
-                  className="form-input w-full text-sm bg-[#0d1324] border-white/5 rounded-xl outline-none"
+                  className="form-input w-full text-sm outline-none"
                   value={selectedTech}
                   onChange={(e) => setSelectedTech(e.target.value)}
                 >
-                  <option value="">اختر الفني المتاح...</option>
+                  <option value="">Select available technician...</option>
                   {technicians.map(t => (
                     <option key={t._id} value={t._id}>
                       {t.name} ({t.region})
@@ -399,40 +400,40 @@ export default function OrderDetail() {
                 <button
                   disabled={!selectedTech || actionLoading}
                   onClick={handleAssignTech}
-                  className="btn-primary w-full py-2.5 rounded-xl text-sm justify-center"
+                  className="btn-primary w-full py-2.5 text-sm justify-center"
                 >
-                  تعيين الفني المختار
+                  Assign Selected Technician
                 </button>
               </div>
             )}
           </div>
 
           {/* Force Status change (Admin Override) */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-amber-500">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <ClipboardList size={18} />
-              <span>تعديل يدوي للحالة</span>
+              <span>Manual Status Update</span>
             </h3>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <select
-                className="form-input w-full text-sm bg-[#0d1324] border-white/5 rounded-xl outline-none"
+                className="form-input w-full text-sm outline-none"
                 value={forceStatus}
                 onChange={(e) => setForceStatus(e.target.value)}
               >
-                <option value="pending">بانتظار المراجعة</option>
-                <option value="assigned">تم تعيين فني</option>
-                <option value="on_way">الفني في الطريق</option>
-                <option value="arrived">وصل الفني</option>
-                <option value="in_progress">جاري الفحص</option>
-                <option value="completed">تم الفحص</option>
-                <option value="report_ready">التقرير جاهز</option>
-                <option value="cancelled">ملغي</option>
+                <option value="pending">Pending Review</option>
+                <option value="assigned">Assigned</option>
+                <option value="on_way">On the Way</option>
+                <option value="arrived">Arrived</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="report_ready">Report Ready</option>
+                <option value="cancelled">Cancelled</option>
               </select>
 
               <textarea
-                className="form-input w-full text-sm bg-[#0d1324] border-white/5 rounded-xl outline-none h-20 resize-none"
-                placeholder="ملاحظات لتحديث الحالة..."
+                className="form-input w-full text-sm outline-none h-20 resize-none"
+                placeholder="Reason for manual status update..."
                 value={statusNote}
                 onChange={(e) => setStatusNote(e.target.value)}
               />
@@ -440,31 +441,31 @@ export default function OrderDetail() {
               <button
                 disabled={actionLoading}
                 onClick={handleForceStatus}
-                className="btn-secondary w-full py-2.5 rounded-xl text-sm justify-center hover:bg-white/10"
+                className="btn-secondary w-full py-2.5 text-sm justify-center"
               >
-                تحديث الحالة يدوياً
+                Update Status Manually
               </button>
             </div>
           </div>
 
           {/* Timeline status history */}
-          <div className="glass-panel p-6 shadow-xl flex flex-col gap-6">
-            <h3 className="text-lg font-bold border-b border-white/5 pb-4 flex items-center gap-2 text-violet-400">
+          <div className="card shadow-xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
               <Activity size={18} />
-              <span>تاريخ وسجل التحديثات</span>
+              <span>Update History & Logs</span>
             </h3>
 
-            <div className="flex flex-col gap-6 relative pr-4 border-r border-white/10">
+            <div className="flex flex-col gap-5 relative pl-4 border-l border-white/10">
               {order.statusHistory.map((log, index) => (
                 <div key={index} className="flex flex-col gap-1 relative">
                   {/* Circle pointer */}
-                  <div className="absolute right-[-21px] top-1.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#0b0f19]" />
+                  <div className="absolute left-[-21px] top-1.5 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[#0b0f19]" />
                   
-                  <div className="flex items-center justify-between text-xs text-[#94a3b8]">
-                    <span className="font-semibold text-indigo-400">{translateStatus(log.status)}</span>
-                    <span>{new Date(log.timestamp).toLocaleString('ar-EG')}</span>
+                  <div className="flex items-center justify-between text-xs text-muted">
+                    <span className="font-semibold text-brand">{getStatusLabel(log.status)}</span>
+                    <span>{new Date(log.timestamp).toLocaleString('en-US')}</span>
                   </div>
-                  {log.note && <p className="text-xs text-[#64748b] leading-relaxed">{log.note}</p>}
+                  {log.note && <p className="text-xs text-secondary leading-relaxed">{log.note}</p>}
                 </div>
               ))}
             </div>
@@ -475,3 +476,4 @@ export default function OrderDetail() {
     </div>
   );
 }
+
