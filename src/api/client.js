@@ -1,4 +1,4 @@
-const BASE_URL = 'https://scan-backend-phi.vercel.app/api/v1';
+const BASE_URL = 'https://scan-backend-nine.vercel.app/api/v1';
 
 export const apiClient = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
@@ -43,9 +43,11 @@ async function request(endpoint, options = {}) {
   const data = await response.json();
 
   if (!response.ok) {
+    if (data.errorDetails) console.error('Server Error Details:', data.errorDetails);
     const error = new Error(data.message || 'حدث خطأ ما في الخادم');
     error.code = data.code || 'HTTP_ERROR';
     error.statusCode = response.status;
+    error.errorDetails = data.errorDetails;
     throw error;
   }
 
