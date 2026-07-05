@@ -1,4 +1,7 @@
-const BASE_URL = 'https://scan-backend-nine.vercel.app/api/v1';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const BASE_URL = isLocal 
+  ? 'http://localhost:3000/api/v1' 
+  : 'https://scan-backend-nine.vercel.app/api/v1';
 
 export const apiClient = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
@@ -9,7 +12,7 @@ export const apiClient = {
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('adminToken');
-  
+
   const headers = {
     'Content-Type': 'application/json',
     'Accept-Language': 'ar',
