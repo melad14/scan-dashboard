@@ -8,7 +8,8 @@ import {
   Settings,
   TrendingUp,
   LogOut,
-  User
+  User,
+  LayoutGrid
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -22,6 +23,7 @@ export default function Layout({ children }) {
     { path: '/technicians', label: 'Technicians', icon: UserCheck },
     { path: '/patients', label: 'Patients', icon: Users },
     { path: '/services', label: 'Services & Pricing', icon: Settings },
+    { path: '/categories', label: 'Categories', icon: LayoutGrid },
     { path: '/analytics', label: 'Analytics', icon: TrendingUp }
   ];
 

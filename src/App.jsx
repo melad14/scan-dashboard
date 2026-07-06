@@ -8,6 +8,7 @@ import OrderDetail from './pages/OrderDetail';
 import Technicians from './pages/Technicians';
 import Patients from './pages/Patients';
 import Services from './pages/Services';
+import Categories from './pages/Categories';
 import Analytics from './pages/Analytics';
 
 // Protected Route Wrapper
@@ -72,6 +73,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Services />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <Categories />
             </ProtectedRoute>
           }
         />
