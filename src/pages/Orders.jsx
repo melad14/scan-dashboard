@@ -42,6 +42,8 @@ export default function Orders() {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'pending': return 'badge-pending';
+      case 'pending_review': return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+      case 'accepted': return 'bg-teal-500/10 text-teal-400 border border-teal-500/20';
       case 'assigned': return 'badge-assigned';
       case 'on_way': return 'badge-on_way';
       case 'arrived': return 'badge-arrived';
@@ -55,7 +57,8 @@ export default function Orders() {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return 'Pending Review';
+      case 'pending': return 'Pending';
+      case 'pending_review': return 'Needs Pricing 📋';
       case 'accepted': return 'Accepted';
       case 'assigned': return 'Assigned';
       case 'on_way': return 'On the Way';
@@ -65,6 +68,18 @@ export default function Orders() {
       case 'report_ready': return 'Report Ready';
       case 'cancelled': return 'Cancelled';
       default: return status.toUpperCase();
+    }
+  };
+
+  const getCategoryLabel = (cat) => {
+    switch (cat) {
+      case 'xray': return 'Home X-Ray';
+      case 'lab': return 'Lab Tests';
+      case 'sonar': return 'Ultrasound (Sonar)';
+      case 'ecg': return 'ECG';
+      case 'holter': return 'Holter Monitor';
+      case 'prescription_only': return 'Prescription Upload';
+      default: return cat.toUpperCase();
     }
   };
 
@@ -101,7 +116,9 @@ export default function Orders() {
             }}
           >
             <option value="all">All Statuses</option>
-            <option value="pending">Pending Review</option>
+            <option value="pending">Pending</option>
+            <option value="pending_review">Needs Pricing 📋</option>
+            <option value="accepted">Accepted</option>
             <option value="assigned">Assigned</option>
             <option value="on_way">On the Way</option>
             <option value="arrived">Arrived</option>
@@ -156,7 +173,7 @@ export default function Orders() {
                       <td className="font-semibold text-brand">{order.orderNumber}</td>
                       <td>{order.patientSnapshot?.name}</td>
                       <td>{order.patientSnapshot?.phone}</td>
-                      <td>{order.serviceCategory === 'xray' ? 'Home X-Ray' : 'Lab Tests'}</td>
+                      <td>{getCategoryLabel(order.serviceCategory)}</td>
                       <td>{order.technician?.name || <span className="text-muted">Unassigned</span>}</td>
                       <td>{new Date(order.createdAt).toLocaleDateString('en-US')}</td>
                       <td>
@@ -164,7 +181,13 @@ export default function Orders() {
                           {getStatusLabel(order.status)}
                         </span>
                       </td>
-                      <td className="font-bold">{order.pricing?.total} EGP</td>
+                      <td className="font-bold">
+                        {order.status === 'pending_review' ? (
+                          <span className="text-amber-500 text-sm font-semibold">Pricing Required</span>
+                        ) : (
+                          `${order.pricing?.total} EGP`
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}

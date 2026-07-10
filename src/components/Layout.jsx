@@ -9,7 +9,9 @@ import {
   TrendingUp,
   LogOut,
   User,
-  LayoutGrid
+  LayoutGrid,
+  AlertTriangle,
+  Sliders
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -24,6 +26,8 @@ export default function Layout({ children }) {
     { path: '/patients', label: 'Patients', icon: Users },
     { path: '/services', label: 'Services & Pricing', icon: Settings },
     { path: '/categories', label: 'Categories', icon: LayoutGrid },
+    { path: '/complaints', label: 'Complaints & Disputes', icon: AlertTriangle },
+    { path: '/settings', label: 'System Settings', icon: Sliders },
     { path: '/analytics', label: 'Analytics', icon: TrendingUp }
   ];
 

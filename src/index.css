@@ -462,8 +462,23 @@ h1, h2, h3, h4, h5, h6 {
    UTILITY CLASSES
    ═══════════════════════════════════════════════════════════ */
 .text-brand { color: var(--brand-primary); }
+.bg-brand { background-color: var(--brand-primary); }
+.bg-brand-hover:hover { background-color: var(--brand-primary-dark); }
 .text-muted { color: var(--text-muted); }
 .text-secondary { color: var(--text-secondary); }
+
+/* Badge status overrides */
+.badge-assigned {
+  background-color: rgba(43, 126, 194, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(43, 126, 194, 0.2);
+}
+.badge-forwarded {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
 
 /* Skeleton loader animation */
 @keyframes shimmer {

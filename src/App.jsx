@@ -10,6 +10,8 @@ import Patients from './pages/Patients';
 import Services from './pages/Services';
 import Categories from './pages/Categories';
 import Analytics from './pages/Analytics';
+import Complaints from './pages/Complaints';
+import Settings from './pages/Settings';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -81,6 +83,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Categories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/complaints"
+          element={
+            <ProtectedRoute>
+              <Complaints />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           }
         />
