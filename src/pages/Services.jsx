@@ -59,6 +59,8 @@ export default function Services() {
   const [price, setPrice] = useState('');
   const [sortOrder, setSortOrder] = useState('0');
   const [description, setDescription] = useState('');
+  const [instructionsAr, setInstructionsAr] = useState('');
+  const [instructionsEn, setInstructionsEn] = useState('');
 
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -153,6 +155,8 @@ export default function Services() {
     setPrice('');
     setSortOrder('0');
     setDescription('');
+    setInstructionsAr('');
+    setInstructionsEn('');
     setIsEditing(false);
     setEditingId(null);
   };
@@ -170,6 +174,8 @@ export default function Services() {
     setPrice(service.price);
     setSortOrder(service.sortOrder || 0);
     setDescription(service.description || '');
+    setInstructionsAr(service.instructionsAr || '');
+    setInstructionsEn(service.instructionsEn || '');
     setIsEditing(true);
     setEditingId(service._id);
     setModalOpen(true);
@@ -185,7 +191,9 @@ export default function Services() {
         category,
         price: Number(price),
         sortOrder: Number(sortOrder),
-        description
+        description,
+        instructionsAr,
+        instructionsEn
       };
 
       if (isEditing) {
@@ -494,6 +502,26 @@ export default function Services() {
                   className="form-input text-sm min-h-[60px]"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-secondary pl-1">Arabic Instructions (التعليمات بالعربية)</label>
+                <textarea
+                  placeholder="مثل: يجب الصيام 8 ساعات..."
+                  className="form-input text-sm min-h-[60px]"
+                  value={instructionsAr}
+                  onChange={(e) => setInstructionsAr(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-secondary pl-1">English Instructions</label>
+                <textarea
+                  placeholder="e.g., Must fast for 8 hours..."
+                  className="form-input text-sm min-h-[60px]"
+                  value={instructionsEn}
+                  onChange={(e) => setInstructionsEn(e.target.value)}
                 />
               </div>
 
