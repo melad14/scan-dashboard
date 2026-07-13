@@ -4,6 +4,7 @@ export const apiClient = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
   post: (endpoint, body) => request(endpoint, { method: 'POST', body }),
   put: (endpoint, body) => request(endpoint, { method: 'PUT', body }),
+  patch: (endpoint, body) => request(endpoint, { method: 'PATCH', body }),
   delete: (endpoint) => request(endpoint, { method: 'DELETE' })
 };
 
