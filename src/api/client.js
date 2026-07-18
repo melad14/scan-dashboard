@@ -1,4 +1,4 @@
-const BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api/v1' : 'https://scan-backend-nine.vercel.app/api/v1';
+const BASE_URL = 'https://scan-backend-nine.vercel.app/api/v1';
 
 export const apiClient = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
