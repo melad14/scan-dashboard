@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Users, Calendar, Award, Loader } from 'lucide-react';
+import { TrendingUp, Calendar, Award, Loader } from 'lucide-react';
 
 export default function Analytics() {
   const [chartData, setChartData] = useState([]);
@@ -64,53 +64,60 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader size={48} className="animate-spin text-brand" />
+      <div className="loading-center">
+        <Loader size={40} className="animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       
       {/* Overview Metric Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="stat-card">
           <div className="flex items-center justify-between">
             <span className="stat-label">Total Revenue</span>
             <div className="stat-icon">
-              <TrendingUp size={20} />
+              <TrendingUp size={18} />
             </div>
           </div>
-          <div className="stat-value">{stats.totalRevenue || 0} EGP</div>
+          <div className="stat-value text-brand">
+            {Number(stats.totalRevenue || 0).toLocaleString()}{' '}
+            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>EGP</span>
+          </div>
         </div>
 
         <div className="stat-card">
           <div className="flex items-center justify-between">
             <span className="stat-label">Medical Visit Coverage</span>
             <div className="stat-icon">
-              <Calendar size={20} />
+              <Calendar size={18} />
             </div>
           </div>
-          <div className="stat-value">Active Visits</div>
+          <div className="stat-value text-base font-semibold" style={{ marginTop: 'var(--space-md)' }}>
+            Active Coverage Area
+          </div>
         </div>
 
         <div className="stat-card">
           <div className="flex items-center justify-between">
             <span className="stat-label">Customer Satisfaction</span>
             <div className="stat-icon">
-              <Award size={20} />
+              <Award size={18} />
             </div>
           </div>
-          <div className="stat-value">4.8 / 5.0</div>
+          <div className="stat-value text-accent">4.8 / 5.0</div>
         </div>
       </div>
 
       {/* Recharts Graphical Panel */}
-      <div className="card shadow-xl flex flex-col gap-6">
-        <h3 className="text-lg font-bold border-b border-white/5 pb-3">Daily Revenue (Last 7 Days)</h3>
+      <div className="card flex flex-col gap-4">
+        <div className="section-header">
+          <h3 className="section-title">Daily Revenue (Last 7 Days)</h3>
+        </div>
         
-        <div className="w-full h-80">
+        <div className="w-full" style={{ height: '320px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
@@ -119,7 +126,7 @@ export default function Analytics() {
                   <stop offset="95%" stopColor="#1D9E75" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
               <XAxis
                 dataKey="name"
                 stroke="#64748b"
@@ -158,4 +165,3 @@ export default function Analytics() {
     </div>
   );
 }
-

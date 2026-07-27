@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { Search, Filter, Loader, AlertCircle } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -42,8 +43,8 @@ export default function Orders() {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'pending': return 'badge-pending';
-      case 'pending_review': return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-      case 'accepted': return 'bg-teal-500/10 text-teal-400 border border-teal-500/20';
+      case 'pending_review': return 'badge-pending_review';
+      case 'accepted': return 'badge-accepted';
       case 'assigned': return 'badge-assigned';
       case 'on_way': return 'badge-on_way';
       case 'arrived': return 'badge-arrived';
@@ -58,7 +59,7 @@ export default function Orders() {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'pending': return 'Pending';
-      case 'pending_review': return 'Needs Pricing 📋';
+      case 'pending_review': return 'Needs Pricing';
       case 'accepted': return 'Accepted';
       case 'assigned': return 'Assigned';
       case 'on_way': return 'On the Way';
@@ -79,36 +80,35 @@ export default function Orders() {
       case 'ecg': return 'ECG';
       case 'holter': return 'Holter Monitor';
       case 'prescription_only': return 'Prescription Upload';
-      default: return cat.toUpperCase();
+      default: return cat?.toUpperCase() || '';
     }
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       {/* Controls panel */}
-      <div className="card flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+      <div className="card flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Search */}
-        <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md flex items-center relative">
-          <input
-            type="text"
-            className="form-input w-full pl-10 pr-4 py-2"
-            placeholder="Search by Order No., Patient Name or Phone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button type="submit" className="absolute left-3 text-muted hover:text-white cursor-pointer">
-            <Search size={16} />
-          </button>
+        <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
+          <div className="input-icon-wrapper">
+            <Search size={16} className="input-icon" />
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Search by Order No., Patient Name or Phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </form>
 
         {/* Filters */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-muted" />
-            <span className="text-sm font-semibold text-secondary">Status:</span>
-          </div>
+          <Filter size={14} className="text-muted" />
+          <span className="form-label" style={{ margin: 0 }}>Status:</span>
           <select
-            className="form-input py-2 text-sm outline-none"
+            className="form-input"
+            style={{ width: 'auto', minWidth: '160px' }}
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
@@ -117,7 +117,7 @@ export default function Orders() {
           >
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
-            <option value="pending_review">Needs Pricing 📋</option>
+            <option value="pending_review">Needs Pricing</option>
             <option value="accepted">Accepted</option>
             <option value="assigned">Assigned</option>
             <option value="on_way">On the Way</option>
@@ -131,16 +131,24 @@ export default function Orders() {
       </div>
 
       {/* Main Table */}
-      <div className="card shadow-xl">
+      <div className="card">
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader size={36} className="animate-spin text-brand" />
+          <div className="loading-center">
+            <Loader size={36} className="animate-spin" />
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl">
+          <div className="alert alert-error">
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
+        ) : orders.length === 0 ? (
+          <EmptyState
+            icon="Inbox"
+            title="No orders found"
+            description="No orders match the current search filters."
+            actionLabel="Clear Filters"
+            onAction={() => { setStatus('all'); setSearch(''); setPage(1); }}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="custom-table">
@@ -157,62 +165,54 @@ export default function Orders() {
                 </tr>
               </thead>
               <tbody>
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-12 text-muted">
-                      No orders match the current search filters.
+                {orders.map((order) => (
+                  <tr
+                    key={order._id}
+                    onClick={() => navigate(`/orders/${order._id}`)}
+                    className={`cursor-pointer tr-${order.status}`}
+                  >
+                    <td className="font-semibold text-brand">{order.orderNumber}</td>
+                    <td>{order.patientSnapshot?.name}</td>
+                    <td>{order.patientSnapshot?.phone}</td>
+                    <td>{getCategoryLabel(order.serviceCategory)}</td>
+                    <td>{order.technician?.name || <span className="text-muted">Unassigned</span>}</td>
+                    <td>{new Date(order.createdAt).toLocaleDateString('en-US')}</td>
+                    <td>
+                      <span className={`badge ${getStatusBadgeClass(order.status)}`}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </td>
+                    <td className="font-bold">
+                      {order.status === 'pending_review' ? (
+                        <span className="text-accent text-sm font-semibold">Pricing Required</span>
+                      ) : (
+                        `${order.pricing?.total} EGP`
+                      )}
                     </td>
                   </tr>
-                ) : (
-                  orders.map((order) => (
-                    <tr
-                      key={order._id}
-                      onClick={() => navigate(`/orders/${order._id}`)}
-                      className="cursor-pointer"
-                    >
-                      <td className="font-semibold text-brand">{order.orderNumber}</td>
-                      <td>{order.patientSnapshot?.name}</td>
-                      <td>{order.patientSnapshot?.phone}</td>
-                      <td>{getCategoryLabel(order.serviceCategory)}</td>
-                      <td>{order.technician?.name || <span className="text-muted">Unassigned</span>}</td>
-                      <td>{new Date(order.createdAt).toLocaleDateString('en-US')}</td>
-                      <td>
-                        <span className={`badge ${getStatusBadgeClass(order.status)}`}>
-                          {getStatusLabel(order.status)}
-                        </span>
-                      </td>
-                      <td className="font-bold">
-                        {order.status === 'pending_review' ? (
-                          <span className="text-amber-500 text-sm font-semibold">Pricing Required</span>
-                        ) : (
-                          `${order.pricing?.total} EGP`
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         )}
 
-        {/* Pagination buttons */}
+        {/* Pagination */}
         {pagination.pages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-6">
+          <div className="pagination">
             <button
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
-              className="btn-secondary py-1.5 px-3 rounded-lg text-sm disabled:opacity-30 cursor-pointer"
+              className="btn-secondary btn-sm"
             >
               Previous
             </button>
-            <span className="text-sm text-secondary px-4">
+            <span className="pagination-info">
               Page {page} of {pagination.pages}
             </span>
             <button
               disabled={page === pagination.pages}
               onClick={() => setPage(p => p + 1)}
-              className="btn-secondary py-1.5 px-3 rounded-lg text-sm disabled:opacity-30 cursor-pointer"
+              className="btn-secondary btn-sm"
             >
               Next
             </button>
@@ -222,4 +222,3 @@ export default function Orders() {
     </div>
   );
 }
-

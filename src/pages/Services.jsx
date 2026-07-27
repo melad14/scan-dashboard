@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
-import { Settings, DollarSign, Loader, Plus, Edit, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Settings, DollarSign, Loader, Plus, Edit, Trash2, X, ArrowUp, ArrowDown, Filter } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 const getCategoryLabel = (category, categories = []) => {
   const found = categories.find(c => c.key === category);
@@ -42,6 +44,7 @@ export default function Services() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilterCategory, setSelectedFilterCategory] = useState('all');
+  const { showToast } = useToast();
   
   // Pricing config form states
   const [transferFeeBase, setTransferFeeBase] = useState(100);
@@ -71,10 +74,11 @@ export default function Services() {
       setServices(servicesRes.data);
 
       try {
-        const categoriesRes = await apiClient.get('/categories');
-        setCategories(categoriesRes.data);
-        if (categoriesRes.data.length > 0) {
-          setCategory(categoriesRes.data[0].key);
+        const categoriesRes = await apiClient.get('/admin/categories');
+        const catList = Array.isArray(categoriesRes.data) ? categoriesRes.data : (Array.isArray(categoriesRes) ? categoriesRes : []);
+        setCategories(catList);
+        if (catList.length > 0) {
+          setCategory(catList[0].key);
         }
       } catch (catErr) {
         console.error('Error fetching categories:', catErr);
@@ -88,7 +92,7 @@ export default function Services() {
       }
     } catch (err) {
       console.error(err);
-      alert('An error occurred while loading services and pricing.');
+      showToast('An error occurred while loading services and pricing.', 'error');
     } finally {
       setLoading(false);
     }
@@ -107,10 +111,10 @@ export default function Services() {
         emergencySurcharge: Number(emergencySurcharge),
         homeServiceFee: Number(homeServiceFee)
       });
-      alert('Platform pricing settings updated successfully!');
+      showToast('Platform pricing settings updated successfully!');
       fetchData();
     } catch (err) {
-      alert(err.message || 'Failed to update pricing settings.');
+      showToast(err.message || 'Failed to update pricing settings.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -141,9 +145,10 @@ export default function Services() {
       const currentCategoryList = newServices.filter(s => s.category === item1.category);
       const orderedIds = currentCategoryList.map(s => s._id);
       await apiClient.put('/admin/services/reorder', { orderedIds });
+      showToast('Service order saved!');
     } catch (err) {
       console.error(err);
-      alert('Failed to save new service order.');
+      showToast('Failed to save new service order.', 'error');
       fetchData();
     }
   };
@@ -151,7 +156,7 @@ export default function Services() {
   const resetServiceForm = () => {
     setNameAr('');
     setNameEn('');
-    setCategory('xray');
+    setCategory(categories[0]?.key || 'xray');
     setPrice('');
     setSortOrder('0');
     setDescription('');
@@ -198,16 +203,16 @@ export default function Services() {
 
       if (isEditing) {
         await apiClient.put(`/admin/services/${editingId}`, payload);
-        alert('Service updated successfully!');
+        showToast('Service updated successfully!');
       } else {
         await apiClient.post('/admin/services', payload);
-        alert('Service created successfully!');
+        showToast('Service created successfully!');
       }
       setModalOpen(false);
       resetServiceForm();
       fetchData();
     } catch (err) {
-      alert(err.message || 'Failed to save service.');
+      showToast(err.message || 'Failed to save service.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -220,10 +225,10 @@ export default function Services() {
     setActionLoading(true);
     try {
       await apiClient.delete(`/admin/services/${id}`);
-      alert('Service deleted successfully!');
+      showToast('Service deleted successfully!');
       fetchData();
     } catch (err) {
-      alert(err.message || 'Failed to delete service.');
+      showToast(err.message || 'Failed to delete service.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -234,311 +239,312 @@ export default function Services() {
     : services.filter(s => s.category === selectedFilterCategory);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+    <div className="flex flex-col gap-6">
       
-      {/* Left side: Services List */}
-      <div className="lg:col-span-2 card shadow-xl flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3">
-          <h3 className="text-lg font-bold flex items-center gap-2 text-brand">
-            <Settings size={18} />
+      {/* ─── 1. Top Section: Full Width Medical Services Catalog ──────── */}
+      <div className="card flex flex-col gap-4">
+        {/* Section Header */}
+        <div className="section-header" style={{ marginBottom: 0 }}>
+          <h3 className="section-title">
+            <Settings size={18} className="icon" />
             <span>Medical Services Catalog</span>
           </h3>
-          <button
-            onClick={handleOpenAdd}
-            className="btn-primary py-1.5 px-3 text-sm cursor-pointer inline-flex items-center gap-1.5"
-          >
-            <Plus size={16} />
+          <button onClick={handleOpenAdd} className="btn-primary btn-sm">
+            <Plus size={15} />
             <span>Add Service</span>
           </button>
         </div>
 
-        {/* Category Filter Selector */}
-        <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg">
-          <span className="text-sm text-secondary font-medium">Filter by Category:</span>
+        {/* Category Filter Bar */}
+        <div className="filter-bar flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter size={14} className="text-muted" />
+            <span className="filter-label">Filter Category:</span>
+          </div>
           <select
             value={selectedFilterCategory}
             onChange={(e) => setSelectedFilterCategory(e.target.value)}
-            className="form-input text-sm max-w-[220px] bg-primary"
-            style={{ appearance: 'auto' }}
+            className="form-input text-xs"
+            style={{ width: 'auto', minWidth: '200px', padding: '6px 12px' }}
           >
-            <option value="all">All Categories (Reordering disabled)</option>
+            <option value="all">All Categories</option>
             {categories.map((cat) => (
               <option key={cat.key} value={cat.key}>
                 {cat.nameEn} ({cat.nameAr})
               </option>
             ))}
           </select>
-          {selectedFilterCategory === 'all' && (
-            <span className="text-xs text-muted pl-2">
-              ⚠️ Select a specific category above to enable manual sorting.
+
+          {selectedFilterCategory === 'all' ? (
+            <span className="text-xs text-muted">
+              Select a specific category above to reorder items
+            </span>
+          ) : (
+            <span className="text-xs text-brand font-semibold">
+              Use ↑↓ buttons to reorder services in this category
             </span>
           )}
         </div>
 
+        {/* Services Data Table */}
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader size={36} className="animate-spin text-brand" />
+          <div className="loading-center">
+            <Loader size={36} className="animate-spin" />
           </div>
+        ) : displayedServices.length === 0 ? (
+          <EmptyState
+            icon="Settings"
+            title="No services found"
+            description="There are no services in this category yet."
+            actionLabel="Add New Service"
+            onAction={handleOpenAdd}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th style={{ width: '80px' }}>Order</th>
+                  <th style={{ width: '70px', textAlign: 'center' }}>Sort</th>
                   <th>Service Name (AR)</th>
                   <th>Service Name (EN)</th>
                   <th>Category</th>
                   <th>Base Price</th>
-                  <th className="text-right">Actions</th>
+                  <th className="text-right" style={{ paddingRight: 'var(--space-base)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {displayedServices.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center py-8 text-muted">
-                      No services found in this category.
+                {displayedServices.map((service, index) => (
+                  <tr key={service._id}>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="inline-flex gap-1 items-center justify-center">
+                        <button
+                          onClick={() => handleMove(index, 'up')}
+                          disabled={selectedFilterCategory === 'all' || index === 0}
+                          className="btn-secondary btn-xs"
+                          style={{ padding: '2px 4px' }}
+                          title={selectedFilterCategory === 'all' ? "Select a specific category to sort" : "Move Up"}
+                        >
+                          <ArrowUp size={11} />
+                        </button>
+                        <button
+                          onClick={() => handleMove(index, 'down')}
+                          disabled={selectedFilterCategory === 'all' || index === displayedServices.length - 1}
+                          className="btn-secondary btn-xs"
+                          style={{ padding: '2px 4px' }}
+                          title={selectedFilterCategory === 'all' ? "Select a specific category to sort" : "Move Down"}
+                        >
+                          <ArrowDown size={11} />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {service.nameAr}
+                    </td>
+                    <td>{service.nameEn}</td>
+                    <td>
+                      <span className={`badge ${getCategoryBadgeClass(service.category, categories)}`}>
+                        {getCategoryLabel(service.category, categories)}
+                      </span>
+                    </td>
+                    <td className="font-bold text-brand">{service.price} EGP</td>
+                    <td className="text-right">
+                      <div className="inline-flex gap-2 justify-end">
+                        <button
+                          onClick={() => handleOpenEdit(service)}
+                          className="btn-secondary btn-xs"
+                        >
+                          <Edit size={12} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteService(service._id, service.nameEn)}
+                          className="btn-danger btn-xs"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  displayedServices.map((service, index) => (
-                    <tr key={service._id}>
-                      <td>
-                        <div className="flex gap-1 items-center">
-                          <button
-                            onClick={() => handleMove(index, 'up')}
-                            disabled={selectedFilterCategory === 'all' || index === 0}
-                            className="btn-secondary p-1 inline-flex items-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                            style={{ padding: '4px' }}
-                            title={selectedFilterCategory === 'all' ? "Select a category to sort" : "Move Up"}
-                          >
-                            <ArrowUp size={12} />
-                          </button>
-                          <button
-                            onClick={() => handleMove(index, 'down')}
-                            disabled={selectedFilterCategory === 'all' || index === displayedServices.length - 1}
-                            className="btn-secondary p-1 inline-flex items-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                            style={{ padding: '4px' }}
-                            title={selectedFilterCategory === 'all' ? "Select a category to sort" : "Move Down"}
-                          >
-                            <ArrowDown size={12} />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="font-semibold text-white">{service.nameAr}</td>
-                      <td>{service.nameEn}</td>
-                      <td>
-                        <span className={`badge ${getCategoryBadgeClass(service.category, categories)}`}>
-                          {getCategoryLabel(service.category, categories)}
-                        </span>
-                      </td>
-                      <td className="font-bold text-white">{service.price} EGP</td>
-                      <td className="text-right">
-                        <div className="inline-flex gap-2">
-                          <button
-                            onClick={() => handleOpenEdit(service)}
-                            className="btn-secondary py-1.5 px-2.5 text-xs inline-flex items-center gap-1 cursor-pointer"
-                          >
-                            <Edit size={12} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteService(service._id, service.nameEn)}
-                            className="btn-danger py-1.5 px-2.5 text-xs inline-flex items-center gap-1 cursor-pointer"
-                            style={{ padding: '6px 10px' }}
-                          >
-                            <Trash2 size={12} />
-                            <span>Delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Right side: Pricing Config Form */}
-      <div className="lg:col-span-1 card shadow-xl flex flex-col gap-4">
-        <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
-          <DollarSign size={18} />
-          <span>Configure Visit Fees & Surcharges</span>
-        </h3>
+      {/* ─── 2. Bottom Section: Full Width Visit Fees & Surcharges Panel ─── */}
+      <div className="card flex flex-col gap-4">
+        <div className="section-header" style={{ marginBottom: 0 }}>
+          <h3 className="section-title">
+            <DollarSign size={18} className="icon" />
+            <span>Configure Visit Fees & Surcharges</span>
+          </h3>
+        </div>
 
         <form onSubmit={handleUpdatePricing} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-secondary pl-1">Base Travel Fee (EGP)</label>
-            <input
-              type="number"
-              required
-              className="form-input text-sm"
-              value={transferFeeBase}
-              onChange={(e) => setTransferFeeBase(e.target.value)}
-            />
-            <span className="text-[10px] text-muted pl-1">
-              Flat fee added to cover technician travel cost for standard visits.
-            </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="form-group">
+              <label className="form-label">Base Travel Fee (EGP)</label>
+              <input
+                type="number"
+                required
+                className="form-input"
+                value={transferFeeBase}
+                onChange={(e) => setTransferFeeBase(e.target.value)}
+              />
+              <span className="form-hint">Flat fee added to cover technician travel cost for standard visits.</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Emergency Surcharge (EGP)</label>
+              <input
+                type="number"
+                required
+                className="form-input"
+                value={emergencySurcharge}
+                onChange={(e) => setEmergencySurcharge(e.target.value)}
+              />
+              <span className="form-hint">Extra fee added if the patient requests an immediate emergency visit.</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Home Service Fee (EGP)</label>
+              <input
+                type="number"
+                required
+                className="form-input"
+                value={homeServiceFee}
+                onChange={(e) => setHomeServiceFee(e.target.value)}
+              />
+              <span className="form-hint">Flat surcharge for performing medical services at patient's home.</span>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-secondary pl-1">Emergency Surcharge (EGP)</label>
-            <input
-              type="number"
-              required
-              className="form-input text-sm"
-              value={emergencySurcharge}
-              onChange={(e) => setEmergencySurcharge(e.target.value)}
-            />
-            <span className="text-[10px] text-muted pl-1">
-              Extra fee added if the patient requests an immediate/emergency check.
-            </span>
+          <div className="flex justify-end" style={{ paddingTop: 'var(--space-xs)', borderTop: '1px solid var(--border-color)' }}>
+            <button
+              type="submit"
+              disabled={actionLoading}
+              className="btn-primary"
+              style={{ minWidth: '200px', justifyContent: 'center' }}
+            >
+              {actionLoading ? 'Saving...' : 'Save Pricing Settings'}
+            </button>
           </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-secondary pl-1">Home Service Fee (EGP)</label>
-            <input
-              type="number"
-              required
-              className="form-input text-sm"
-              value={homeServiceFee}
-              onChange={(e) => setHomeServiceFee(e.target.value)}
-            />
-            <span className="text-[10px] text-muted pl-1">
-              Additional flat surcharge for performing services at the patient's home.
-            </span>
-          </div>
-
-          <button
-            type="submit"
-            disabled={actionLoading}
-            className="btn-primary w-full py-2.5 text-sm justify-center mt-2 cursor-pointer"
-          >
-            {actionLoading ? 'Saving...' : 'Update Pricing Settings'}
-          </button>
         </form>
       </div>
 
-      {/* Add / Edit Service Modal Overlay */}
+      {/* ─── Add / Edit Service Modal ─────────────────────────────────── */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="card max-w-md w-full flex flex-col gap-4 relative shadow-2xl border border-white/10 bg-surface">
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setModalOpen(false)}>
+          <div className="modal-content" style={{ maxWidth: '520px' }}>
             
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <h3 className="text-lg font-bold text-brand">
-                {isEditing ? 'Edit Service Details' : 'Add New Service'}
+            <div className="section-header">
+              <h3 className="section-title">
+                {isEditing ? 'Edit Service' : 'Add New Service'}
               </h3>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-muted hover:text-white transition-colors cursor-pointer"
-              >
-                <X size={20} />
+              <button onClick={() => setModalOpen(false)} className="text-muted cursor-pointer hover:text-primary">
+                <X size={18} />
               </button>
             </div>
 
-            {/* Modal Form */}
             <form onSubmit={handleSaveService} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">Arabic Name (الاسم بالعربية)</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="مثال: أشعة سينية على اليد"
-                  className="form-input text-sm"
-                  value={nameAr}
-                  onChange={(e) => setNameAr(e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Arabic Name (الاسم بالعربية)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="مثال: أشعة سينية على الصدر"
+                    className="form-input"
+                    value={nameAr}
+                    onChange={(e) => setNameAr(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">English Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Chest X-Ray"
+                    className="form-input"
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">English Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g., Hand X-Ray"
-                  className="form-input text-sm"
-                  value={nameEn}
-                  onChange={(e) => setNameEn(e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <select
+                    required
+                    className="form-input"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.nameEn} ({cat.nameAr})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Base Price (EGP)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 400"
+                    className="form-input"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">Service Category</label>
-                <select
-                  required
-                  className="form-input text-sm bg-primary"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  style={{ appearance: 'auto' }}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.key} value={cat.key}>
-                      {cat.nameEn} ({cat.nameAr})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">Base Price (EGP)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="e.g., 350"
-                  className="form-input text-sm"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-
-
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">Description (الوصف)</label>
+              <div className="form-group">
+                <label className="form-label">Description (الوصف)</label>
                 <textarea
-                  placeholder="Write a brief description..."
-                  className="form-input text-sm min-h-[60px]"
+                  placeholder="Brief description of the service..."
+                  className="form-input"
+                  style={{ minHeight: '60px' }}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">Arabic Instructions (التعليمات بالعربية)</label>
-                <textarea
-                  placeholder="مثل: يجب الصيام 8 ساعات..."
-                  className="form-input text-sm min-h-[60px]"
-                  value={instructionsAr}
-                  onChange={(e) => setInstructionsAr(e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Arabic Instructions (التعليمات)</label>
+                  <textarea
+                    placeholder="مثال: يجب الصيام 8 ساعات..."
+                    className="form-input"
+                    style={{ minHeight: '60px' }}
+                    value={instructionsAr}
+                    onChange={(e) => setInstructionsAr(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">English Instructions</label>
+                  <textarea
+                    placeholder="e.g. Must fast for 8 hours..."
+                    className="form-input"
+                    style={{ minHeight: '60px' }}
+                    value={instructionsEn}
+                    onChange={(e) => setInstructionsEn(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-secondary pl-1">English Instructions</label>
-                <textarea
-                  placeholder="e.g., Must fast for 8 hours..."
-                  className="form-input text-sm min-h-[60px]"
-                  value={instructionsEn}
-                  onChange={(e) => setInstructionsEn(e.target.value)}
-                />
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="flex gap-3 justify-end border-t border-white/5 pt-3 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="btn-secondary py-2 px-4 text-sm cursor-pointer"
-                >
+              <div className="flex gap-3 justify-end" style={{ paddingTop: 'var(--space-base)', borderTop: '1px solid var(--border-color)', marginTop: 'var(--space-xs)' }}>
+                <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="btn-primary py-2 px-4 text-sm cursor-pointer justify-center min-w-[100px]"
-                >
+                <button type="submit" disabled={actionLoading} className="btn-primary">
                   {actionLoading ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Service'}
                 </button>
               </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
+import { useToast } from '../context/ToastContext';
 import { Search, Loader, AlertCircle, User, Phone, Calendar, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import EmptyState from '../components/EmptyState';
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -12,6 +14,7 @@ export default function Patients() {
   const [patientOrders, setPatientOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -44,7 +47,7 @@ export default function Patients() {
       setPatientOrders(res.data);
     } catch (err) {
       console.error(err);
-      alert('Failed to retrieve patient order history');
+      showToast('Failed to retrieve patient order history', 'error');
     } finally {
       setOrdersLoading(false);
     }
@@ -61,44 +64,58 @@ export default function Patients() {
       case 'completed': return 'Completed';
       case 'report_ready': return 'Report Ready';
       case 'cancelled': return 'Cancelled';
-      default: return status.toUpperCase();
+      default: return status?.toUpperCase() || '';
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending': return 'badge-pending';
+      case 'assigned': return 'badge-assigned';
+      case 'on_way': return 'badge-on_way';
+      case 'completed': return 'badge-completed';
+      case 'report_ready': return 'badge-report_ready';
+      case 'cancelled': return 'badge-danger';
+      default: return 'badge-info';
     }
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       
       {/* Left Columns: Patients List */}
-      <div className={`lg:col-span-2 flex flex-col gap-6 ${selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
-        <div className="card shadow-lg">
-          <form onSubmit={handleSearchSubmit} className="w-full flex items-center relative">
-            <input
-              type="text"
-              className="form-input w-full pl-10 pr-4 py-2"
-              placeholder="Search by Patient Name or Phone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button type="submit" className="absolute left-3 text-muted hover:text-white cursor-pointer">
-              <Search size={16} />
-            </button>
+      <div className={`lg:col-span-2 flex flex-col gap-5 ${selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
+        <div className="card">
+          <form onSubmit={handleSearchSubmit}>
+            <div className="input-icon-wrapper">
+              <Search size={16} className="input-icon" />
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Search by Patient Name or Phone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </form>
         </div>
 
-        <div className="card shadow-xl">
+        <div className="card">
           {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader size={36} className="animate-spin text-brand" />
+            <div className="loading-center">
+              <Loader size={36} className="animate-spin" />
             </div>
           ) : error ? (
-            <div className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl">
+            <div className="alert alert-error">
               <AlertCircle size={18} />
               <span>{error}</span>
             </div>
           ) : patients.length === 0 ? (
-            <div className="text-center py-12 text-muted">
-              No patients registered yet.
-            </div>
+            <EmptyState
+              icon="Users"
+              title="No patients found"
+              description="No patients registered yet or none match your search."
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="custom-table">
@@ -108,7 +125,7 @@ export default function Patients() {
                     <th>Phone</th>
                     <th>Age</th>
                     <th>Gender</th>
-                    <th>Registered Date</th>
+                    <th>Registered</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -116,13 +133,12 @@ export default function Patients() {
                     <tr
                       key={patient._id}
                       onClick={() => handleSelectPatient(patient)}
-                      className={`cursor-pointer ${
-                        selectedPatient?._id === patient._id ? 'bg-white/5 border-l-4 border-brand' : ''
-                      }`}
+                      className="cursor-pointer"
+                      style={selectedPatient?._id === patient._id ? { background: 'var(--bg-surface-hover)' } : {}}
                     >
-                      <td className="font-semibold text-white">{patient.name}</td>
+                      <td className="font-semibold" style={{ color: 'var(--text-primary)' }}>{patient.name}</td>
                       <td>{patient.phone}</td>
-                      <td>{patient.age ? `${patient.age} years` : 'Unknown'}</td>
+                      <td>{patient.age ? `${patient.age} yrs` : '—'}</td>
                       <td>{patient.gender === 'male' ? 'Male' : 'Female'}</td>
                       <td className="text-xs text-secondary">
                         {new Date(patient.createdAt).toLocaleDateString('en-US')}
@@ -138,89 +154,118 @@ export default function Patients() {
 
       {/* Right Column: Selected Patient Details & Orders */}
       {selectedPatient && (
-        <div className="lg:col-span-1 card shadow-xl flex flex-col gap-6 relative">
-          
-          {/* Back btn for mobile */}
-          <button
-            onClick={() => setSelectedPatient(null)}
-            className="lg:hidden flex items-center gap-1 text-xs text-muted mb-2 cursor-pointer"
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Patients List</span>
-          </button>
+        <div className="lg:col-span-1 flex flex-col gap-5">
+          {/* Patient Profile Card */}
+          <div className="card flex flex-col gap-4">
+            {/* Back btn for mobile */}
+            <button
+              onClick={() => setSelectedPatient(null)}
+              className="lg:hidden flex items-center gap-1 text-xs text-muted cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to List</span>
+            </button>
 
-          <h3 className="text-lg font-bold border-b border-white/5 pb-3 flex items-center gap-2 text-brand">
-            <User size={18} />
-            <span>Patient Profile</span>
-          </h3>
-
-          <div className="flex flex-col gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-brand/10 border border-brand/20 text-brand rounded-full flex items-center justify-center font-bold text-lg">
-                {selectedPatient.name[0]}
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-white text-base">{selectedPatient.name}</span>
-                <span className="text-xs text-secondary flex items-center gap-1 mt-0.5">
-                  <Phone size={12} />
-                  <span>{selectedPatient.phone}</span>
-                </span>
-              </div>
+            <div className="section-header">
+              <h3 className="section-title">
+                <User size={17} className="icon" />
+                <span>Patient Profile</span>
+              </h3>
             </div>
-            <div className="text-xs text-secondary grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/5">
-              <span>Age: {selectedPatient.age ? `${selectedPatient.age} years` : 'Unknown'}</span>
-              <span>Gender: {selectedPatient.gender === 'male' ? 'Male' : 'Female'}</span>
+
+            <div className="inner-section flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  background: 'var(--brand-primary-light)',
+                  border: '1px solid var(--border-brand)',
+                  color: 'var(--brand-primary)',
+                  borderRadius: 'var(--radius-full)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  flexShrink: 0
+                }}>
+                  {selectedPatient.name[0]}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{selectedPatient.name}</span>
+                  <span className="text-xs text-secondary flex items-center gap-1">
+                    <Phone size={12} />
+                    <span>{selectedPatient.phone}</span>
+                  </span>
+                </div>
+              </div>
+              
+              <div className="detail-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <div className="detail-item">
+                  <span className="detail-label">Age</span>
+                  <span className="detail-value">{selectedPatient.age ? `${selectedPatient.age} years` : 'Unknown'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Gender</span>
+                  <span className="detail-value">{selectedPatient.gender === 'male' ? 'Male' : 'Female'}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <h4 className="text-sm font-bold mt-2 text-secondary flex items-center gap-2">
-            <Calendar size={14} />
-            <span>Order History</span>
-          </h4>
-
-          {ordersLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader size={24} className="animate-spin text-brand" />
+          {/* Order History */}
+          <div className="card flex flex-col gap-0">
+            <div className="section-header">
+              <h3 className="section-title">
+                <Calendar size={17} className="icon" />
+                <span>Order History</span>
+              </h3>
             </div>
-          ) : patientOrders.length === 0 ? (
-            <div className="text-center py-6 text-xs text-muted bg-white/5 border border-dashed border-white/5 rounded-xl">
-              No medical orders booked by this patient yet.
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-1">
-              {patientOrders.map((order) => (
-                <div
-                  key={order._id}
-                  onClick={() => navigate(`/orders/${order._id}`)}
-                  className="bg-primary/50 border border-white/5 p-4 rounded-xl flex flex-col gap-2 cursor-pointer hover:border-brand/30"
-                >
-                  <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-brand">{order.orderNumber}</span>
-                    <span className="text-muted">
-                      {new Date(order.createdAt).toLocaleDateString('en-US')}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-white">
-                      {order.services.map(s => s.nameEn).join(' + ')}
-                    </span>
-                    <span className="font-bold text-white">{order.pricing?.total} EGP</span>
-                  </div>
 
-                  <div className="flex justify-between items-center mt-1 pt-1 border-t border-white/5 text-[10px] text-secondary">
-                    <span>Status: {getStatusLabel(order.status)}</span>
-                    {order.technician && <span>Tech: {order.technician.name}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            {ordersLoading ? (
+              <div className="loading-center" style={{ padding: '32px 0' }}>
+                <Loader size={24} className="animate-spin" />
+              </div>
+            ) : patientOrders.length === 0 ? (
+              <div className="inner-section" style={{ textAlign: 'center', padding: '24px var(--space-base)', color: 'var(--text-muted)', fontSize: '13px', borderStyle: 'dashed' }}>
+                No orders by this patient yet.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3" style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
+                {patientOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    onClick={() => navigate(`/orders/${order._id}`)}
+                    className="inner-section cursor-pointer card-hover"
+                    style={{ padding: 'var(--space-md)' }}
+                  >
+                    <div className="flex justify-between text-xs" style={{ marginBottom: '6px' }}>
+                      <span className="font-semibold text-brand">{order.orderNumber}</span>
+                      <span className="text-muted">
+                        {new Date(order.createdAt).toLocaleDateString('en-US')}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-xs">
+                      <span style={{ color: 'var(--text-primary)' }}>
+                        {order.services?.map(s => s.nameEn).join(' + ')}
+                      </span>
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{order.pricing?.total} EGP</span>
+                    </div>
 
+                    <div className="flex justify-between items-center" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid var(--border-color)', fontSize: '11px' }}>
+                      <span className={`badge ${getStatusBadgeClass(order.status)}`} style={{ fontSize: '10px', padding: '2px 7px' }}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                      {order.technician && <span className="text-muted">Tech: {order.technician.name}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
-
     </div>
   );
 }
-

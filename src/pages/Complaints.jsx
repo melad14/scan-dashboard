@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
-import { Loader, Send, CheckCircle, Info } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Loader, Send, CheckCircle, RefreshCw, AlertTriangle } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
 import ErrorBlock from '../components/ErrorBlock';
 
@@ -9,13 +10,7 @@ export default function Complaints() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState(null); // { type: 'success'|'error', text: '' }
-
-  const showNotification = (text, type = 'success') => {
-    setNotification({ text, type });
-    setTimeout(() => setNotification(null), 4000);
-  };
-
+  const { showToast } = useToast();
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -39,10 +34,10 @@ export default function Complaints() {
     setActionLoading(true);
     try {
       await apiClient.patch(`/admin/complaints/${id}/status`, { status });
-      showNotification(`تم تحديث حالة الشكوى بنجاح إلى ${status === 'resolved' ? 'تم الحل' : 'تم التحويل'}`);
+      showToast(`Complaint status updated to ${status === 'resolved' ? 'Resolved' : 'Forwarded'}`);
       fetchComplaints();
     } catch (err) {
-      showNotification(err.message || 'فشل تحديث حالة الشكوى', 'error');
+      showToast(err.message || 'Failed to update complaint status', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -57,7 +52,6 @@ export default function Complaints() {
     }
   };
 
-
   const getStatusLabel = (status) => {
     switch (status) {
       case 'pending': return 'Pending';
@@ -68,49 +62,43 @@ export default function Complaints() {
   };
 
   return (
-    <div className="flex flex-col gap-6 position-relative">
-      {/* Notification Toast */}
-      {notification && (
-        <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border transition-all duration-300 ${
-          notification.type === 'error' 
-            ? 'bg-rose-500/10 border-rose-500/25 text-rose-400' 
-            : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
-        }`}>
-          <Info size={16} />
-          <span className="text-xs font-semibold fontFamily-cairo">{notification.text}</span>
-        </div>
-      )}
-
+    <div className="flex flex-col gap-5">
       {/* Controls */}
-      <div className="card flex items-center justify-between gap-4 shadow-lg">
-        <h2 className="text-xl font-bold text-white">Complaints & Disputes</h2>
+      <div className="card flex items-center justify-between gap-4">
+        <div className="section-header" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>
+          <h2 className="section-title" style={{ fontSize: '18px' }}>
+            <AlertTriangle size={18} className="icon" />
+            <span>Complaints & Disputes</span>
+          </h2>
+        </div>
         <button
           onClick={fetchComplaints}
           disabled={loading}
-          className="btn-secondary flex items-center gap-2 py-2 px-4 cursor-pointer text-xs"
+          className="btn-secondary btn-sm"
         >
+          <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           <span>Reload</span>
         </button>
       </div>
 
       {/* Main Content */}
-      <div className="card shadow-xl">
+      <div className="card">
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader size={36} className="animate-spin text-brand" />
+          <div className="loading-center">
+            <Loader size={36} className="animate-spin" />
           </div>
         ) : error ? (
           <ErrorBlock 
-            title="فشل تحميل الشكاوى والاعتراضات" 
+            title="Failed to load complaints" 
             message={error} 
             onRetry={fetchComplaints} 
           />
         ) : complaints.length === 0 ? (
           <EmptyState 
             icon="AlertTriangle" 
-            title="لا توجد شكاوى مسجلة" 
-            description="لم يقم أي مريض أو مركز طبي بتقديم شكاوى أو اعتراضات حتى الآن." 
-            actionLabel="تحديث القائمة"
+            title="No complaints submitted" 
+            description="No patients or medical centers have submitted complaints or disputes yet." 
+            actionLabel="Refresh List"
             onAction={fetchComplaints}
           />
         ) : (
@@ -133,18 +121,18 @@ export default function Complaints() {
                     <td className="font-semibold text-brand">
                       {comp.orderId?.orderNumber || 'Unknown'}
                     </td>
-                    <td className="font-medium text-white">
+                    <td className="font-medium" style={{ color: 'var(--text-primary)' }}>
                       {comp.sender?.name || 'User'}
                     </td>
                     <td>
-                      <span className="text-secondary text-sm">
+                      <span className="text-secondary text-xs">
                         {comp.senderModel === 'Technician' ? 'Center / Tech' : 'Patient'}
                       </span>
                     </td>
-                    <td className="max-w-xs truncate text-muted text-sm" title={comp.text}>
+                    <td className="max-w-xs truncate text-muted text-xs" title={comp.text}>
                       {comp.text}
                     </td>
-                    <td>
+                    <td className="text-xs text-secondary">
                       {new Date(comp.createdAt).toLocaleString('en-US')}
                     </td>
                     <td>
@@ -153,15 +141,14 @@ export default function Complaints() {
                       </span>
                     </td>
                     <td className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="inline-flex justify-end gap-2">
                         {comp.status === 'pending' && (
                           <button
                             disabled={actionLoading}
                             onClick={() => handleUpdateStatus(comp._id, 'forwarded')}
-                            className="btn-primary py-1 px-2.5 text-xs flex items-center gap-1.5 justify-center bg-brand hover:bg-brand-hover text-white cursor-pointer"
-                            title="Forward to Center/Technician"
+                            className="btn-primary btn-xs"
                           >
-                            <Send size={12} />
+                            <Send size={11} />
                             <span>Forward</span>
                           </button>
                         )}
@@ -170,16 +157,16 @@ export default function Complaints() {
                           <button
                             disabled={actionLoading}
                             onClick={() => handleUpdateStatus(comp._id, 'resolved')}
-                            className="btn-primary py-1 px-2.5 text-xs flex items-center gap-1.5 justify-center bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
-                            title="Mark as Resolved"
+                            className="btn-primary btn-xs"
+                            style={{ background: 'var(--success)' }}
                           >
-                            <CheckCircle size={12} />
+                            <CheckCircle size={11} />
                             <span>Resolve</span>
                           </button>
                         )}
 
                         {comp.status === 'resolved' && (
-                          <span className="text-emerald-400 text-xs font-semibold">Settled</span>
+                          <span className="text-success text-xs font-semibold">Settled</span>
                         )}
                       </div>
                     </td>
@@ -193,4 +180,3 @@ export default function Complaints() {
     </div>
   );
 }
-
