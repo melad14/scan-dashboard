@@ -36,15 +36,25 @@ export function ToastProvider({ children }) {
       {/* Toast Portal */}
       {toasts.length > 0 && (
         <div className="toast-container">
-          {toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={`toast toast-${toast.type}`}
-              onClick={() => dismissToast(toast.id)}
-            >
-              <span>{toast.message}</span>
-            </div>
-          ))}
+          {toasts.map((toast) => {
+            const icons = {
+              success: '✅',
+              error: '❌',
+              warning: '⚠️',
+              info: 'ℹ️',
+            };
+            const icon = icons[toast.type] || 'ℹ️';
+            return (
+              <div
+                key={toast.id}
+                className={`toast toast-${toast.type}`}
+                onClick={() => dismissToast(toast.id)}
+              >
+                <span className="toast-icon">{icon}</span>
+                <span className="toast-text">{toast.message}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </ToastContext.Provider>
