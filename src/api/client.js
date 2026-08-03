@@ -1,4 +1,4 @@
-const BASE_URL = 'https://scan-backend-nine.vercel.app/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://scan-backend-nine.vercel.app/api/v1';
 
 export const apiClient = {
   get: (endpoint) => request(endpoint, { method: 'GET' }),
