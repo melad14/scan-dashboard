@@ -7,9 +7,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['framer-motion', 'lucide-react', 'react-hot-toast']
+        // Function form: the object form is rejected by Vite's rolldown bundler
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (/[\/](react|react-dom|react-router-dom|scheduler)[\/]/.test(id)) return 'vendor'
+          if (/[\/](framer-motion|lucide-react|react-hot-toast)[\/]/.test(id)) return 'ui'
         }
       }
     }
