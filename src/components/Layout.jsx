@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import logoImg from '../assets/logo.png';
 import {
   LayoutDashboard,
   Activity,
@@ -57,9 +58,11 @@ export default function Layout({ children }) {
         <div>
           {/* Logo */}
           <div className="sidebar-logo-container">
-            <div className="sidebar-logo">SG</div>
+            <div className="sidebar-logo overflow-hidden">
+              <img src={logoImg} alt="Dr Ray" className="w-full h-full object-contain p-1" onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerText = 'DR'; }} />
+            </div>
             <div>
-              <div className="sidebar-brand-name">ScanGo</div>
+              <div className="sidebar-brand-name">Dr Ray</div>
               <div className="sidebar-brand-sub">Admin Dashboard</div>
             </div>
           </div>
